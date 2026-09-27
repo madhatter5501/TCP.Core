@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../TCP.Core/TCP.Core.csproj" />
+    <ProjectReference Include="../TCP.Transport.Kestrel/TCP.Transport.Kestrel.csproj" />
+  </ItemGroup>
+
+  <!--
+    The UI is a Vite + React app in ClientApp/ that builds into wwwroot/. Building this project
+    restores npm packages when needed and rebuilds the UI when its sources change, so
+    `dotnet run` and the test projects always serve a current bundle.
+    Pass -p:SkipClientAppBuild=true to build without Node (wwwroot must already exist).
+  -->
+  <PropertyGroup>
+    <ClientAppDirectory>$(MSBuildProjectDirectory)/ClientApp/</ClientAppDirectory>
+    <ClientAppOutput>$(MSBuildProjectDirectory)/wwwroot/index.html</ClientAppOutput>
+    <SkipClientAppBuild Condition="'$(SkipClientAppBuild)' == ''">false</SkipClientAppBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="ClientApp/**" />
+    <None Remove="ClientApp/**" />
+    <ClientAppSource Include="ClientApp/src/**;ClientApp/index.html;ClientApp/package.json;ClientApp/package-lock.json;ClientApp/vite.config.ts;ClientApp/tsconfig.json" Exclude="ClientApp/src/**/*.test.*;ClientApp/src/test/**" />
+  </ItemGroup>
+
+  <Target Name="RestoreClientApp" Condition="'$(SkipClientAppBuild)' != 'true'"
+          Inputs="$(ClientAppDirectory)package-lock.json" Outputs="$(ClientAppDirectory)node_modules/.package-lock.json">
+    <Exec Command="npm --version" StandardOutputImportance="low" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="NpmExitCode" />
+    </Exec>
+    <Error Condition="'$(NpmExitCode)' != '0'" Text="Node.js/npm is required to build the Explorer UI. Install Node.js, or build with -p:SkipClientAppBuild=true when wwwroot is already built." />
+    <Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(ClientAppDirectory)" />
+  </Target>
+
+  <Target Name="BuildClientApp" BeforeTargets="BeforeBuild" DependsOnTargets="RestoreClientApp" Condition="'$(SkipClientAppBuild)' != 'true'"
+          Inputs="@(ClientAppSource)" Outputs="$(ClientAppOutput)">
+    <Exec Command="npm run build" WorkingDirectory="$(ClientAppDirectory)" />
+  </Target>
+
+  <!-- wwwroot is generated after evaluation, so include it for publish once it exists. -->
+  <Target Name="IncludeClientAppOutput" AfterTargets="BuildClientApp" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <Content Include="wwwroot/**" Exclude="@(Content)" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+</Project>

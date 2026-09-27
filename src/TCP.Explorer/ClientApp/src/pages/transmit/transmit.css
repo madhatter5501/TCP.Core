@@ -1,0 +1,81 @@
+/* Controls | exchange ladder | packet inspector. On roomy screens each pane scrolls on its own. */
+.transmit-bench { display: grid; grid-template-columns: 300px minmax(320px, .95fr) minmax(0, 1.25fr); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+.transmit-bench > * { min-width: 0; min-height: 0; }
+.transmit-bench .lab-inputs { padding: 20px 22px; }
+.lab-inputs select { margin-bottom: 10px; }
+.scenario-description { font-size: .8125rem; color: var(--body); background: #0c131e; border: 1px solid var(--line); border-left: 2px solid var(--green); border-radius: 6px; padding: 9px 11px; margin: 0 0 16px; }
+.lab-inputs textarea + p { margin: 6px 0 14px; }
+.transmit-bench .input-pair { margin-bottom: 16px; }
+.transmission-scope { margin: 14px 0 0; }
+
+.ladder-pane { display: flex; flex-direction: column; border-right: 1px solid var(--line); padding: 20px 18px 16px; }
+.transmission-status { color: var(--green); font-size: .875rem; margin: 0 0 12px; min-height: 2.6em; }
+.transmission-hosts { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); padding: 8px 138px 6px 62px; border-top: 1px solid var(--line); }
+.transmission-hosts strong { color: var(--text); margin-right: 4px; }
+.ladder { list-style: none; margin: 0 0 10px; padding: 0; overflow-y: auto; flex: 1 1 auto; scrollbar-width: thin; }
+.ladder-empty { flex: 1 1 auto; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: .875rem; border: 1px dashed var(--line); border-radius: 8px; padding: 24px; min-height: 200px; margin-bottom: 10px; }
+.ladder-row { --tone: var(--green); display: grid; grid-template-columns: 56px 1fr 132px; gap: 6px; align-items: stretch; width: 100%; background: none; text-align: left; padding: 0; border-radius: 5px; }
+.ladder-row:hover { background: #172230; }
+.ladder-row[aria-pressed=true] { background: #223244; }
+.ladder-row.dropped, .ladder-row.corrupted { --tone: var(--amber); }
+.ladder-time, .ladder-meta { font: .6875rem var(--mono); color: var(--muted); align-self: center; padding: 10px 0; }
+.ladder-time { padding-left: 6px; }
+.ladder-meta { text-align: right; padding-right: 8px; white-space: nowrap; }
+.dropped .ladder-meta, .corrupted .ladder-meta { color: var(--amber); }
+.ladder-track { position: relative; border-inline: 1px dashed #34475e; padding: 7px 10px 17px; text-align: center; }
+.ladder-label { font: .75rem var(--mono); color: var(--tone); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.ladder-arrow { position: absolute; left: 0; right: 0; bottom: 9px; height: 1px; background: var(--tone); }
+.ladder-arrow::after { content: ""; position: absolute; top: -4px; border: 4.5px solid transparent; }
+.from-a .ladder-arrow::after { right: 0; border-left: 7px solid var(--tone); border-right: 0; }
+.from-b .ladder-arrow::after { left: 0; border-right: 7px solid var(--tone); border-left: 0; }
+.ladder-row[aria-pressed=true] .ladder-arrow { height: 2px; }
+/* A dropped frame never reaches the far lifeline. */
+.dropped.from-a .ladder-arrow { right: 50%; }
+.dropped.from-b .ladder-arrow { left: 50%; }
+.dropped .ladder-arrow::after { content: "✕"; border: 0; top: -9px; font-size: 11px; color: var(--tone); }
+.dropped.from-a .ladder-arrow::after { right: -4px; }
+.dropped.from-b .ladder-arrow::after { left: -4px; }
+
+.packet-inspector { display: flex; flex-direction: column; padding: 20px 22px 0; }
+.inspector-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.packet-inspector h2 { font-size: 1.05rem; letter-spacing: 0; }
+.packet-inspector .segmented button:disabled { opacity: .4; cursor: default; }
+.inspector-body { flex: 1 1 auto; overflow-y: auto; padding-bottom: 20px; scrollbar-width: thin; }
+.inspector-body > p { font-size: .8125rem; }
+.inspector-body h3 { font-size: .8125rem; font-weight: 500; color: var(--muted); margin: 4px 0 8px; }
+.inspector-body h3 ~ h3 { margin-top: 18px; }
+.packet-inspector .field-table td:nth-child(2) { white-space: normal; font-family: inherit; color: var(--text); overflow-wrap: anywhere; }
+.packet-inspector .field-table td:last-child { white-space: nowrap; font-family: var(--mono); }
+.packet-inspector pre { font: .75rem/1.7 var(--mono); background: #080e16; border: 1px solid var(--line); border-radius: 6px; padding: 12px; margin: 0; overflow-x: auto; color: var(--green); }
+.execution-trace p { border-top: 1px solid var(--line); padding-top: 8px; margin-bottom: 8px; font-size: .8125rem; color: var(--body); }
+.execution-trace p:first-child { border-top: 0; padding-top: 0; }
+.execution-trace code { color: var(--green); font-size: .75rem; }
+.inspector-empty p { font-size: .875rem; max-width: 460px; }
+.key-delivered { color: var(--green); }
+.key-fault { color: var(--amber); }
+
+@media (min-width: 1000px) and (min-height: 640px) {
+  .transmit-bench.fill { grid-template-rows: minmax(0, 1fr); }
+  .transmit-bench.fill .lab-inputs { overflow-y: auto; scrollbar-width: thin; }
+  .transmit-bench.fill .ladder { flex: 1 1 0; min-height: 0; }
+  .transmit-bench.fill .inspector-body { flex: 1 1 0; min-height: 0; }
+}
+@media (max-width: 1250px) {
+  .transmit-bench { grid-template-columns: 280px minmax(0, 1fr); }
+  .transmit-bench .packet-inspector { grid-column: 1 / -1; border-top: 1px solid var(--line); }
+  .ladder-pane { border-right: 0; }
+  .transmit-bench.fill { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+}
+@media (max-width: 1000px) { .transmit-bench.fill { grid-template-rows: none; } .ladder { max-height: 420px; } .inspector-body { max-height: 520px; } }
+@media (max-width: 760px) {
+  .transmit-bench { grid-template-columns: minmax(0, 1fr); }
+  .transmit-bench .lab-inputs { border-right: 0; border-bottom: 1px solid var(--line); }
+  .ladder-pane { padding: 16px 12px; }
+  .ladder-row { grid-template-columns: 0 1fr 64px; gap: 4px; }
+  .ladder-time { visibility: hidden; padding: 0; }
+  .ladder-delivery { display: none; }
+  .transmission-hosts { padding: 8px 70px 6px 6px; }
+  .packet-inspector { padding: 16px 14px 0; }
+}
+.ladder-meta .layer-tag { padding: 0 4px; font-size: .625rem; margin-right: 2px; }
+.packet-inspector h2 .layer-tag { margin-left: 6px; vertical-align: middle; }

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TCP.Transport.Kestrel.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../src/TCP.Core/TCP.Core.csproj" />
+    <ProjectReference Include="../../src/TCP.Transport.Kestrel/TCP.Transport.Kestrel.csproj" />
+    <ProjectReference Include="../../src/TCP.Explorer/TCP.Explorer.csproj" />
+  </ItemGroup>
+</Project>

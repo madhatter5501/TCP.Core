@@ -1,0 +1,30 @@
+.skip-link { position: absolute; top: -100px; left: 20px; padding: 12px; background: var(--green); color: #10251e; z-index: 3; }
+.skip-link:focus { top: 10px; }
+.topbar { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; height: var(--topbar-height); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); }
+.topbar-inner { max-width: var(--page-width); height: 100%; margin: auto; padding: 0 var(--gutter); display: flex; align-items: center; gap: 24px; }
+.brand { display: flex; align-items: center; gap: 12px; white-space: nowrap; margin-right: auto; }
+.brand strong { font-size: 1.15rem; letter-spacing: -.04em; }
+.brand strong span { color: var(--muted); }
+.brand-icon { background: var(--green); color: #10251e; font-size: 1.5rem; font-weight: 700; width: 30px; height: 30px; display: grid; place-content: center; border-radius: 7px; line-height: 1; }
+.brand-divider { height: 20px; width: 1px; background: var(--line); margin: 0 3px; }
+.brand-label { font: .75rem var(--mono); letter-spacing: .1em; color: var(--muted); }
+.topbar nav { display: flex; gap: 4px; font-size: .875rem; }
+.topbar nav a { color: var(--muted); padding: 6px 12px; border-radius: 6px; white-space: nowrap; }
+.topbar nav a:hover { color: var(--text); background: var(--raised); }
+.topbar nav a.active { color: var(--green); background: #16292a; }
+.transport-pill { display: flex; align-items: center; gap: 7px; min-width: 90px; justify-content: flex-end; font: .75rem var(--mono); color: var(--muted); white-space: nowrap; cursor: default; }
+.transport-pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px #7ee7c522; }
+/* Tool pages put a .fill element in main; on roomy screens it takes the remaining height and its panes scroll. */
+main { max-width: var(--page-width); margin: auto; padding: 22px var(--gutter) 24px; outline: none; display: flex; flex-direction: column; min-height: calc(100dvh - var(--topbar-height)); }
+@media (min-width: 1000px) and (min-height: 640px) {
+  main:has(> .fill) { height: calc(100dvh - var(--topbar-height)); }
+  .fill { flex: 1 1 0; min-height: 0; }
+}
+@media (max-width: 1100px) { .brand-label, .brand-divider, .transport-pill { display: none; } }
+@media (max-width: 700px) {
+  .topbar { height: auto; }
+  .topbar-inner { flex-wrap: wrap; row-gap: 10px; padding-top: 12px; padding-bottom: 10px; }
+  .topbar nav { order: 3; width: 100%; overflow-x: auto; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); scrollbar-width: none; box-sizing: content-box; }
+  .topbar nav a { padding: 6px 10px; font-size: .8125rem; }
+  main { padding-top: 20px; min-height: 0; }
+}

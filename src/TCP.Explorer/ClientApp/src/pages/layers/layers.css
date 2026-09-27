@@ -1,0 +1,81 @@
+.workbench { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--panel); }
+.diagram-panel { padding: 22px 26px; background: radial-gradient(ellipse at 45% 45%, #17283766, transparent 70%); }
+.diagram-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.playback { display: flex; }
+.playback button { white-space: nowrap; }
+.canvas-shell { height: 370px; margin: 10px 0; }
+.layer-buttons { display: flex; gap: 7px; flex-wrap: wrap; }
+.layer-buttons button { flex: 1; min-width: 58px; background: #141f2d; border: 1px solid var(--line); border-radius: 5px; font: .8125rem var(--mono); padding: 7px 4px; color: var(--muted); }
+.layer-buttons button[aria-pressed=true] { border-color: var(--layer-color); color: var(--layer-color); background: #253342; }
+.diagram-caption { display: flex; gap: 12px; background: #0b131e; border: 1px solid var(--line); border-radius: 7px; padding: 12px 14px; margin: 14px 0; }
+.caption-mark { color: var(--green); font-size: 1.4rem; line-height: 1; }
+.diagram-caption p { color: #c5d0dd; font-size: .875rem; margin: 0; min-height: 2.6em; }
+.diagram-legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: .75rem; color: var(--muted); }
+.diagram-legend span { display: flex; align-items: center; gap: 7px; }
+.diagram-legend i { width: 7px; height: 7px; border-radius: 2px; }
+.diagram-legend .diagram-note { margin-left: auto; }
+
+.inspector { padding: 24px 28px 0; border-left: 1px solid var(--line); background: #121a27; min-width: 0; }
+.inspector-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+.inspector-heading .eyebrow { margin: 0; }
+.inspector > h2 { font-size: 1.75rem; margin-bottom: 6px; }
+.layer-subtitle { color: var(--muted); margin: 0; }
+.detail-tabs { display: flex; border-bottom: 1px solid var(--line); gap: 16px; margin: 16px 0 0; }
+.detail-tabs a { color: var(--muted); padding: 0 0 12px; font-size: .875rem; border-bottom: 2px solid transparent; white-space: nowrap; }
+.detail-tabs a:hover { color: var(--text); }
+.detail-tabs a[aria-selected=true] { color: var(--green); border-color: var(--green); }
+.detail-content { line-height: 1.65; padding: 20px 0 24px; }
+.detail-content h3 { margin: 22px 0 9px; }
+.detail-content h3:first-of-type { margin-top: 0; }
+.detail-content p { color: var(--body); font-size: .9375rem; }
+.pdu-pill { display: inline-flex; gap: 12px; background: #1b2837; padding: 8px 12px; border-radius: 5px; margin-bottom: 20px; font: .8125rem var(--mono); color: var(--green); }
+.part-list { list-style: none; padding: 0; margin: 0; }
+.part-list li { border-top: 1px solid var(--line); padding: 12px 0; font-size: .875rem; color: var(--muted); }
+.part-list li strong { color: var(--text); display: block; margin-bottom: 4px; }
+.gotcha { border-left: 2px solid var(--amber); padding: 0 0 0 14px; margin-bottom: 22px; }
+.gotcha strong { font-size: .9375rem; }
+.gotcha p { margin: 6px 0 0; }
+.source-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+.source-item code { display: block; color: var(--green); margin-bottom: 5px; }
+.detail-content .source-item p { margin: 0; font-size: .875rem; }
+.protocol-choice { display: flex; gap: 8px; margin-bottom: 16px; }
+.protocol-choice button { font-size: .8125rem; background: var(--raised); border: 1px solid var(--line); border-radius: 4px; padding: 5px 12px; }
+.protocol-choice button[aria-pressed=true] { border-color: var(--blue); color: var(--blue); }
+
+/* Filling the viewport: the canvas takes the spare height and only the detail text scrolls. */
+@media (min-width: 1000px) and (min-height: 640px) {
+  .workbench.fill { grid-template-rows: minmax(0, 1fr); }
+  .workbench.fill .diagram-panel { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .workbench.fill .canvas-shell { flex: 1 1 0; height: auto; min-height: 280px; max-height: 480px; }
+  .workbench.fill .inspector { display: flex; flex-direction: column; min-height: 0; }
+  .workbench.fill .detail-content { flex: 1 1 0; min-height: 0; overflow-y: auto; margin-right: -14px; padding-right: 14px; scrollbar-width: thin; }
+}
+/* Short laptop screens: the canvas labels already name each layer, so drop the legend. */
+@media (min-width: 1000px) and (min-height: 640px) and (max-height: 820px) {
+  .workbench.fill .diagram-legend { display: none; }
+  .workbench.fill .diagram-caption { margin: 10px 0 0; }
+  .workbench.fill .diagram-panel { padding-top: 16px; padding-bottom: 16px; }
+}
+@media (max-width: 1100px) {
+  .workbench { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+  .diagram-panel { padding: 22px; }
+  .inspector { padding: 22px 22px 0; }
+  .detail-tabs { gap: 12px; }
+  .detail-tabs a { font-size: .8125rem; }
+}
+@media (max-width: 850px) {
+  .workbench { grid-template-columns: 1fr; }
+  .inspector { border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 560px) {
+  .diagram-panel { padding: 20px 16px; }
+  .inspector { padding: 20px 16px 0; }
+  .diagram-controls { flex-wrap: wrap; gap: 8px; }
+  .quiet-button { font-size: .8125rem; padding: 6px; }
+  .segmented button { padding: 5px 10px; }
+  .canvas-shell { height: 350px; }
+  .diagram-legend { gap: 10px; }
+  .layer-buttons button { min-width: 0; }
+  .detail-tabs { gap: 16px; overflow-x: auto; }
+  .inspector-heading { flex-wrap: wrap; }
+}

@@ -1,0 +1,8 @@
+.term { color: inherit; text-decoration: underline dotted; text-decoration-color: color-mix(in srgb, var(--green) 70%, transparent); text-underline-offset: 3px; text-decoration-thickness: 1px; cursor: help; }
+.term:hover, .term:focus-visible { color: var(--green); text-decoration-style: solid; }
+.term-tooltip { position: fixed; z-index: 10; padding: 12px 14px; border: 1px solid #3f536b; border-radius: 8px; background: #172231; box-shadow: 0 12px 32px #0009; font-size: .8125rem; line-height: 1.5; color: var(--body); pointer-events: none; }
+.term-tooltip.above { transform: translateY(-100%); }
+.term-tooltip strong { color: var(--green); font-family: var(--mono); }
+.term-expansion { color: var(--text); }
+.term-tooltip p { margin: 6px 0 8px; font-size: .8125rem; color: var(--body); }
+.term-more { font-size: .6875rem; color: var(--muted); }

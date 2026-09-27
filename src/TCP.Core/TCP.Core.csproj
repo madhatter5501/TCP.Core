@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>TCP</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TCP.Tests" />
+    <InternalsVisibleTo Include="TCP.Explorer" />
+  </ItemGroup>
+</Project>

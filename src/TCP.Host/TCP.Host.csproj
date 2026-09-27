@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TCP.Core/TCP.Core.csproj" />
+    <ProjectReference Include="../TCP.Networking.Pcap/TCP.Networking.Pcap.csproj" />
+  </ItemGroup>
+</Project>

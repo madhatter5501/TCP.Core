@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TCP.Core/TCP.Core.csproj" />
+    <Project Path="src/TCP.Explorer/TCP.Explorer.csproj" />
+    <Project Path="src/TCP.Host/TCP.Host.csproj" />
+    <Project Path="src/TCP.Networking.Pcap/TCP.Networking.Pcap.csproj" />
+    <Project Path="src/TCP.Transport.Kestrel/TCP.Transport.Kestrel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TCP.Explorer.Tests/TCP.Explorer.Tests.csproj" />
+    <Project Path="tests/TCP.Transport.Kestrel.Tests/TCP.Transport.Kestrel.Tests.csproj" />
+    <Project Path="tests/TCP.Tests/TCP.Tests.csproj" />
+  </Folder>
+</Solution>
