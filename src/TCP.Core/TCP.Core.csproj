@@ -5,5 +5,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="TCP.Tests" />
     <InternalsVisibleTo Include="TCP.Explorer" />
+    <InternalsVisibleTo Include="TCP.Explorer.Browser" />
   </ItemGroup>
 </Project>

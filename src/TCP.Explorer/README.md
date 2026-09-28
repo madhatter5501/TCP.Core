@@ -26,7 +26,13 @@ npm --prefix src/TCP.Explorer/ClientApp run dev
 
 `.github/workflows/ci.yml` builds and tests the solution and the UI on every push and pull request. Pushes to `main` then publish the UI to GitHub Pages at `https://<owner>.github.io/<repository>/`. Enable it once under **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
-Pages hosts static files only, so there is no `/api` there. The layers, sizes and concepts sections work unchanged. The transmit lab explains that real-code transmissions need the ASP.NET host. To reproduce the Pages build locally, run `npm run build -- --base=/<repository>/`.
+Pages hosts static files only, so there is no `/api` there. Instead, the transmit lab runs the same `TransmissionSimulation.cs` compiled to WebAssembly by `src/TCP.Explorer.Browser`. It runs in a Web Worker, and the .NET runtime (about 5 MB) downloads on the first run. The ASP.NET host keeps using `/api/simulate`. To reproduce the Pages build locally, from the repository root:
+
+```sh
+VITE_SIMULATOR=browser npm --prefix src/TCP.Explorer/ClientApp run build -- --base=/<repository>/
+dotnet publish src/TCP.Explorer.Browser -c Release -o artifacts/browser-simulation
+cp -r artifacts/browser-simulation/wwwroot/_framework src/TCP.Explorer/wwwroot/
+```
 
 ## Explore
 

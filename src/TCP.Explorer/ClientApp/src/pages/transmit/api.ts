@@ -1,9 +1,17 @@
+import { runInBrowser } from './browserSimulator';
 import type { SimulationRequest, SimulationResult } from './types';
 
 const timeoutMs = 15000;
 
-/** Runs the experiment on the ASP.NET host. The browser renders returned evidence and never fabricates it. */
-export async function runSimulation(request: SimulationRequest): Promise<SimulationResult> {
+/**
+ * Runs the experiment on real TCP.Core code: in the browser (WebAssembly) for static builds made with
+ * VITE_SIMULATOR=browser, otherwise on the ASP.NET host. The UI renders returned evidence and never fabricates it.
+ */
+export function runSimulation(request: SimulationRequest): Promise<SimulationResult> {
+  return import.meta.env.VITE_SIMULATOR === 'browser' ? runInBrowser(request) : runOnHost(request);
+}
+
+async function runOnHost(request: SimulationRequest): Promise<SimulationResult> {
   let response: Response;
   try {
     response = await fetch(`${import.meta.env.BASE_URL}api/simulate`, {
