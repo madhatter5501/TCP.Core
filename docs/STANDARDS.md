@@ -20,7 +20,7 @@ follows.
 | ICMPv4 | Echo; Destination Unreachable (protocol, port, fragmentation needed, source route failed); Time Exceeded for reassembly; Parameter Problem with a pointer; Redirects received; errors rate-limited and never sent about broadcasts, non-first fragments or other errors (RFC 1122 3.2.2); received errors believed only if they quote a recent send | Router-generated messages such as TTL-expired in transit |
 | TCP | RFC 9293 endpoint with window scaling, timestamps and PAWS, SACK and D-SACK, RACK-TLP, ECN, CUBIC or NewReno, delayed ACKs, SYN cookies, Fast Open, keep-alive, user timeout, TCP-AO and MD5, path-MTU black-hole detection | IPv6, Multipath TCP, AccECN, BBR; see the transport guide |
 | UDP | RFC 768 sockets with ICMP port-unreachable, broadcast and connected-socket semantics | See the transport guide |
-| Application (L5–7) | HTTP/2 frame codec (RFC 9113) | HPACK (header blocks stay opaque) and stream state; TLS is under development in `L5_7.Application/Tls` |
+| Application (L5–7) | HTTP/2 frame codec (RFC 9113); TLS 1.3 and 1.2 client and server (RFC 8446, RFC 5246) over `TcpConnection` | HPACK (header blocks stay opaque) and stream state; TLS session resumption, 0-RTT and client certificates; see the [TLS guide](../src/TCP.Core/L5_7.Application/Tls/README.md) |
 
 Ethernet is specified by IEEE 802.3; bridging and VLANs by IEEE 802.1D and 802.1Q.
 Relevant Internet specifications include RFC 826 (ARP), RFC 791 (IPv4), RFC 792
