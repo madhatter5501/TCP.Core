@@ -1,4 +1,4 @@
-# C# ARP Cache From Scratch
+# C# ARP cache from scratch
 
 ## Goal
 
@@ -24,9 +24,7 @@ IPv4 Address → MAC Address
 
 But a real cache needs more than a simple dictionary because resolution is asynchronous, mappings become stale, requests can fail, and packets may need to wait while an address is being resolved.
 
----
-
-# Where ARP Fits
+## Where ARP fits
 
 ARP sits between IPv4 routing and Ethernet transmission.
 
@@ -78,9 +76,7 @@ Interface + Next-Hop IPv4 Address
 
 Ethernet can then construct the frame.
 
----
-
-# ARP Is Not the Routing Table
+## ARP is not the routing table
 
 The routing table might contain:
 
@@ -102,9 +98,7 @@ eth0         192.168.1.42    12:34:56:78:90:AB
 
 These solve different problems.
 
----
-
-# ARP Cache Is Not a Switch MAC Table
+## ARP cache is not a switch MAC table
 
 A Layer-2 switch maintains something conceptually like:
 
@@ -134,9 +128,7 @@ ARP:
 IPv4 → MAC
 ```
 
----
-
-# Basic ARP Cache Entry
+## Basic ARP cache entry
 
 Start simple.
 
@@ -166,9 +158,7 @@ Conceptually:
 └─────────────────────────────────────┘
 ```
 
----
-
-# Cache Key
+## Cache key
 
 Do not necessarily think of the cache as globally:
 
@@ -198,9 +188,7 @@ Dictionary<ArpCacheKey, ArpEntry>
 
 This allows the stack to eventually support multiple Layer-2 interfaces correctly.
 
----
-
-# Why It Isn't Just a Dictionary
+## Why it isn't just a dictionary
 
 Suppose IPv4 wants to transmit to:
 
@@ -240,9 +228,7 @@ Use MAC     Begin ARP
 
 A cache miss therefore starts an asynchronous process.
 
----
-
-# ARP Resolution
+## ARP resolution
 
 For a missing address:
 
@@ -274,9 +260,7 @@ Who has 192.168.1.42?
 Tell 192.168.1.10
 ```
 
----
-
-# Resolution Flow
+## Resolution flow
 
 ```text
 IPv4 Packet
@@ -317,9 +301,7 @@ Get MAC             Create INCOMPLETE
                NIC
 ```
 
----
-
-# Entry States
+## Entry states
 
 A useful initial state machine:
 
@@ -333,7 +315,7 @@ public enum ArpState
 }
 ```
 
-## Incomplete
+### Incomplete
 
 Resolution is currently happening.
 
@@ -346,9 +328,7 @@ Attempts:   1
 
 An ARP request has been sent and the stack is waiting for a reply.
 
----
-
-## Reachable
+### Reachable
 
 A valid mapping exists.
 
@@ -360,9 +340,7 @@ State:      REACHABLE
 
 Packets can immediately be transmitted.
 
----
-
-## Stale
+### Stale
 
 A mapping exists but has aged enough that the stack should no longer assume indefinitely that it is correct.
 
@@ -374,9 +352,7 @@ State:      STALE
 
 The exact stale/revalidation behavior can be added later.
 
----
-
-## Failed
+### Failed
 
 Resolution failed.
 
@@ -389,9 +365,7 @@ Attempts:   3
 
 Queued packets cannot currently be delivered.
 
----
-
-# State Machine
+## State machine
 
 Initial simplified model:
 
@@ -423,9 +397,7 @@ Do not over-engineer the state machine initially.
 
 Get basic resolution working first.
 
----
-
-# More Complete Entry
+## More complete entry
 
 Once basic ARP works, an entry might evolve toward:
 
@@ -461,9 +433,7 @@ MacAddress = null;
 State = ArpState.Incomplete;
 ```
 
----
-
-# Pending Packets
+## Pending packets
 
 An important part of ARP resolution is deciding what happens to packets while resolution is underway.
 
@@ -520,9 +490,7 @@ Packet 2 ──┼──→ Ethernet → NIC
 Packet 3 ──┘
 ```
 
----
-
-# Possible Resolution API
+## Possible resolution API
 
 Avoid designing ARP purely around:
 
@@ -575,9 +543,7 @@ return   Begin resolution
 
 The exact API should evolve from actual requirements rather than being fixed prematurely.
 
----
-
-# ARP Request Handling
+## ARP request handling
 
 Your stack will also receive ARP requests.
 
@@ -625,9 +591,7 @@ Is Target IP ours?
 Reply     Ignore
 ```
 
----
-
-# ARP Reply Handling
+## ARP reply handling
 
 When receiving:
 
@@ -663,9 +627,7 @@ Then:
 4. Flush queued packets
 ```
 
----
-
-# Retries
+## Retries
 
 ARP requests can be lost.
 
@@ -708,9 +670,7 @@ public sealed class ArpOptions
 }
 ```
 
----
-
-# Cache Expiration
+## Cache expiration
 
 ARP mappings should not live forever.
 
@@ -739,9 +699,7 @@ Eventually the entry can be refreshed or removed.
 
 Don't implement sophisticated expiration behavior until basic ARP resolution works.
 
----
-
-# Static Entries
+## Static entries
 
 Eventually support mappings that don't expire:
 
@@ -764,9 +722,7 @@ arpCache.AddStatic(
 
 Static entries should not participate in normal expiration.
 
----
-
-# Suggested Components
+## Suggested components
 
 ```text
 Arp/
@@ -803,9 +759,7 @@ ArpOptions
 
 Don't create every abstraction immediately. Introduce them when responsibilities actually emerge.
 
----
-
-# First Implementation
+## First implementation
 
 Keep version 1 deliberately small.
 
@@ -846,11 +800,9 @@ IPv4 → MAC available
 
 Then evolve it.
 
----
+## Implementation progression
 
-# Implementation Progression
-
-## Stage 1 — Basic Cache
+### Stage 1 — Basic cache
 
 - [ ] Define `MacAddress`
 - [ ] Define `ArpCacheKey`
@@ -867,9 +819,7 @@ eth0 + 192.168.1.1
 AA:BB:CC:DD:EE:FF
 ```
 
----
-
-## Stage 2 — ARP Packets
+### Stage 2 — ARP packets
 
 - [ ] Parse ARP request
 - [ ] Parse ARP reply
@@ -885,9 +835,7 @@ Raw Ethernet payload
     ArpPacket
 ```
 
----
-
-## Stage 3 — Respond to ARP
+### Stage 3 — Respond to ARP
 
 - [ ] Receive broadcast ARP request
 - [ ] Determine whether target IP belongs to us
@@ -902,9 +850,7 @@ arp -a
 
 or the operating system's equivalent neighbor command shows the MAC for the IP owned by the custom stack.
 
----
-
-## Stage 4 — Active Resolution
+### Stage 4 — Active resolution
 
 - [ ] Detect cache miss
 - [ ] Create `INCOMPLETE` entry
@@ -920,18 +866,14 @@ ResolveAsync(192.168.1.42)
 → AA:BB:CC:DD:EE:FF
 ```
 
----
-
-## Stage 5 — Pending Packets
+### Stage 5 — Pending packets
 
 - [ ] Queue packets while resolution is pending
 - [ ] Prevent duplicate simultaneous resolutions
 - [ ] Flush packets after successful resolution
 - [ ] Fail/drop queued packets when resolution fails
 
----
-
-## Stage 6 — Reliability
+### Stage 6 — Reliability
 
 - [ ] Resolution timeout
 - [ ] ARP request retries
@@ -939,9 +881,7 @@ ResolveAsync(192.168.1.42)
 - [ ] `FAILED` state
 - [ ] Cancellation
 
----
-
-## Stage 7 — Cache Lifecycle
+### Stage 7 — Cache lifecycle
 
 - [ ] Track entry age
 - [ ] Mark old entries stale
@@ -949,20 +889,16 @@ ResolveAsync(192.168.1.42)
 - [ ] Refresh mappings
 - [ ] Static entries
 
----
-
-## Stage 8 — Multiple Interfaces
+### Stage 8 — Multiple interfaces
 
 - [ ] Interface-specific cache keys
 - [ ] Independent resolution per interface
 - [ ] Correct source IPv4 selection
 - [ ] Correct source MAC selection
 
----
+## Tests
 
-# Tests
-
-## Cache Test
+### Cache test
 
 ```text
 Given:
@@ -984,9 +920,7 @@ returns:
 AA:BB:CC:DD:EE:FF
 ```
 
----
-
-## Resolution Test
+### Resolution test
 
 ```text
 Resolve(192.168.1.42)
@@ -1007,9 +941,7 @@ Resolution Completes
 AA:BB:CC:DD:EE:FF
 ```
 
----
-
-## Timeout Test
+### Timeout test
 
 ```text
 Resolve()
@@ -1030,9 +962,7 @@ Retry
 FAILED
 ```
 
----
-
-## Duplicate Resolution Test
+### Duplicate resolution test
 
 Two callers simultaneously request:
 
@@ -1059,9 +989,7 @@ Caller B ←─────┘
 
 Do not unnecessarily broadcast two independent ARP requests.
 
----
-
-# Wireshark
+## Wireshark
 
 Useful filter:
 
@@ -1098,9 +1026,7 @@ ARP Reply          →           REACHABLE
                                MAC = AA:BB:...
 ```
 
----
-
-# Questions the Implementation Should Eventually Answer
+## Questions the implementation should eventually answer
 
 When writing each feature, be able to explain:
 
@@ -1119,9 +1045,7 @@ When writing each feature, be able to explain:
 - How does ARP spoofing/poisoning work?
 - Why doesn't a normal Layer-2 switch need an ARP cache to forward Ethernet frames?
 
----
-
-# Important Mental Model
+## Important mental model
 
 The entire path can be reduced to three different questions:
 

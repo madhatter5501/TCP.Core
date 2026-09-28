@@ -133,8 +133,8 @@ export const layers: Layer[] = [
         description: 'TCP checksums include the TCP header, data, and an IP pseudo-header. The IPv4 checksum only covers the IPv4 header. UDP over IPv4 may omit its checksum; TCP cannot.'
       },
       {
-        title: 'A baseline IPv4 TCP endpoint',
-        description: 'TcpHost handles active/passive open, full-duplex streams, Reno recovery, persist probes, FIN/RST and TIME-WAIT. All calls share the stack thread. UDP, IPv6, window scaling, SACK and timestamps are not implemented.'
+        title: 'IPv4 TCP and UDP endpoints',
+        description: 'TcpHost handles active/passive open, full-duplex streams, CUBIC or NewReno congestion control, window scaling, SACK, timestamps, persist probes, FIN/RST and TIME-WAIT. UdpHost provides UDP alongside it. All calls share the stack thread. IPv6 is not implemented.'
       }
     ],
     files: [
@@ -252,7 +252,7 @@ export const layers: Layer[] = [
       },
       {
         title: 'DF and path MTU need careful handling',
-        description: 'SendIPv4 returns false when its MTU check fails with DF set. Internet routers may report ICMP fragmentation-needed. TCP validates the quoted connection/sequence, reduces its packet budget, and retransmits smaller segments. Automatic upward path-MTU probing is not implemented.'
+        description: 'SendIPv4 returns false when its MTU check fails with DF set. Internet routers may report ICMP fragmentation-needed. TCP validates the quoted connection/sequence, reduces its packet budget, and retransmits smaller segments. Without any ICMP, repeated timeouts also shrink segments (black-hole detection), and the route MTU is tried again 10 minutes after a path MTU drop.'
       }
     ],
     files: [

@@ -22,6 +22,24 @@ For UI work with hot reload, keep the host running for `/api` and start Vite bes
 npm --prefix src/TCP.Explorer/ClientApp run dev
 ```
 
+### Serving through TCP.Core
+
+By default Kestrel uses the operating system's sockets. Set `TCP_EXPLORER_TRANSPORT=tcp-core` to serve the Explorer through this repository's own stack on a real interface, via `TCP.Transport.Kestrel` and libpcap (macOS, usually with `sudo`):
+
+```sh
+sudo TCP_EXPLORER_TRANSPORT=tcp-core TCP_EXPLORER_INTERFACE=en0 TCP_EXPLORER_ADDRESS=192.168.1.250 dotnet run --project src/TCP.Explorer
+```
+
+| Variable | Meaning |
+| --- | --- |
+| `TCP_EXPLORER_INTERFACE`, `TCP_EXPLORER_ADDRESS` | Required: the interface and an unused IPv4 address on its subnet; there is no fallback to OS sockets |
+| `TCP_EXPLORER_GATEWAY` | Optional default route |
+| `TCP_EXPLORER_PORT` | HTTP/1.1 port (default 5097) |
+| `TCP_EXPLORER_H2C_PORT` | Optional separate port for cleartext HTTP/2 with prior knowledge (`curl --http2-prior-knowledge`) |
+| `TCP_EXPLORER_MTU` | Link MTU (default 1500) |
+
+Browse to the configured address from another machine on the subnet; the host OS does not own that address. This mode is tested only over a virtual link so far; live-network validation is still open in [docs/tcp-web-server-plan.md](../../docs/tcp-web-server-plan.md).
+
 ## GitHub Pages
 
 `.github/workflows/ci.yml` builds and tests the solution and the UI on every push and pull request. Pushes to `main` then publish the UI to GitHub Pages at `https://<owner>.github.io/<repository>/`. Enable it once under **Settings → Pages → Build and deployment → Source: GitHub Actions**.
@@ -56,7 +74,7 @@ Each section is its own page with a single intent. Every URL is linkable; the ho
 
 ## Model boundaries
 
-The content reflects the checked-in implementation as reviewed on 2026-09-27. It intentionally uses source rather than `docs/STANDARDS.md` where that document has fallen behind the implementation. Maintain `ClientApp/src/content/layers.ts` as the stack evolves.
+The content reflects the checked-in implementation as reviewed on 2026-09-27. It intentionally uses source rather than `docs/standards.md` where that document has fallen behind the implementation. Maintain `ClientApp/src/content/layers.ts` as the stack evolves.
 
 The transmission lab references and executes TCP.Core against two in-memory interfaces. It never opens a physical NIC or sends packets onto your network. The original layer canvas illustrates TCP conceptually; the actual ICMP ping path bypasses L4. The five-layer diagram groups OSI layers 5–7. Diagram blocks are not to byte scale.
 
@@ -70,7 +88,7 @@ ICMP experiments: successful ping, fragmentation/reassembly, oversized DF refusa
 
 The harness uses the same internal `ProcessFrame` and `Tick` seams as the core tests through `InternalsVisibleTo`. It drives both stacks on one thread and advances a virtual clock, without calling `Run`. Consequently address-claim startup, real NIC behavior, signaling, preamble/FCS, physical delays and OS offload are not exercised. Each request owns its state; input and frame-count limits bound the experiment. The clock is virtual and is not a performance measurement.
 
-TCP connection callbacks and `EchoRequestAnswered`, `NeighborResolutionFailed`, and `IcmpErrorReceived` provide direct core evidence. For ICMP only, a passive observer uses the production IPv4 reassembler and ICMP parser to verify captured replies because the host has no echo-reply notification. TCP uses the application's actual received stream. This is evidence of the tested paths, not proof of complete standards compliance or real-network interoperability. See `../TCP.Core/L4.Transport/README.md` for TCP's API and remaining extension limits; UDP remains unimplemented.
+TCP connection callbacks and `EchoRequestAnswered`, `NeighborResolutionFailed`, and `IcmpErrorReceived` provide direct core evidence. For ICMP only, a passive observer uses the production IPv4 reassembler and ICMP parser to verify captured replies because the host has no echo-reply notification. TCP uses the application's actual received stream. This is evidence of the tested paths, not proof of complete standards compliance or real-network interoperability. See `../TCP.Core/L4.Transport/README.md` for the TCP and UDP APIs and remaining extension limits; the lab runs TCP and ICMP scenarios only.
 
 The transmission endpoint requires the ASP.NET host. Under `npm run dev` without the host, every page except real-code runs still works.
 
