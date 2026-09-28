@@ -61,7 +61,7 @@ test('unknown layers and views are not found', () => {
 test('a transmit link preselects its experiment and defaults', () => {
   renderRoute('/transmit?scenario=loss');
   expect(screen.getByLabelText('Experiment')).toHaveValue('loss');
-  expect(screen.getByLabelText('Bytes the app writes')).toHaveValue(4000);
+  expect(screen.getByLabelText('Payload bytes')).toHaveValue(4000);
   expect(screen.getByText(/Reassembly can never complete/)).toBeInTheDocument();
 });
 
@@ -69,7 +69,7 @@ test('choosing an experiment updates the URL and resets its defaults', async () 
   const { router } = renderRoute('/transmit');
   await userEvent.selectOptions(screen.getByLabelText('Experiment'), 'ping');
   expect(router.state.location.search).toBe('?scenario=ping');
-  expect(screen.getByLabelText('Bytes the app writes')).toHaveValue(32);
+  expect(screen.getByLabelText('Payload bytes')).toHaveValue(32);
 });
 
 test('the size lab recalculates and reports invalid input', async () => {

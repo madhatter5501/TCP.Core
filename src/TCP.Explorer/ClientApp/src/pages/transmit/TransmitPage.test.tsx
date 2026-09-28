@@ -6,7 +6,8 @@ import type { CapturedFrame, SimulationResult } from './types';
 const frame = (number: number, from: 'Host A' | 'Host B', protocol: string, delivery: CapturedFrame['delivery']): CapturedFrame => ({
   number, timeMs: number, from, to: from === 'Host A' ? 'Host B' : 'Host A', protocol, delivery,
   explanation: `Frame ${number} explanation.`, length: 60, sentHex: '48690a', receivedHex: delivery === 'Dropped' ? '' : '48690a',
-  fields: [{ name: 'EtherType', value: `value-${number}`, offset: 12, bytes: 2 }]
+  fields: [{ name: 'EtherType', value: `value-${number}`, offset: 12, bytes: 2 }],
+  sections: [{ name: 'Ethernet header', offset: 0, bytes: 14 }, { name: 'Ethernet padding', offset: 14, bytes: 46 }]
 });
 
 const result: SimulationResult = {

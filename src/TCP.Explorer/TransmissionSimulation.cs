@@ -18,8 +18,10 @@ namespace TCP.Explorer;
 public sealed record SimulationRequest(string Scenario = "ping", string Message = "Hello from TCP.Core!", int PayloadBytes = 32, int Mtu = 1500);
 public sealed record TraceEvent(double TimeMs, string Kind, string Message);
 public sealed record PacketField(string Name, string Value, int Offset, int Bytes);
+/// <summary>A contiguous span of the frame owned by one header or payload, for the inspector's byte map.</summary>
+public sealed record FrameSection(string Name, int Offset, int Bytes);
 public sealed record CapturedFrame(int Number, double TimeMs, string From, string To, string Protocol,
-    string Delivery, string Explanation, int Length, string SentHex, string ReceivedHex, List<PacketField> Fields);
+    string Delivery, string Explanation, int Length, string SentHex, string ReceivedHex, List<PacketField> Fields, List<FrameSection> Sections);
 public sealed record SimulationResult(string Scenario, bool SendAccepted, bool EchoAnswered, bool ReplyVerified,
     string Outcome, int PayloadBytes, int Mtu, double VirtualDurationMs, List<TraceEvent> Events, List<CapturedFrame> Frames, int TcpRetransmissions = 0);
 
@@ -146,6 +148,7 @@ public static class TransmissionSimulation
             new("Source MAC", frame.Source.ToString(), 6, 6),
             new("EtherType", $"0x{frame.EtherType:X4}", 12, 2)
         };
+        List<FrameSection> sections = [new("Ethernet header", 0, 14)];
         var protocol = "Ethernet";
         if (frame.EtherType == (ushort)EtherType.Arp)
         {
@@ -159,6 +162,8 @@ public static class TransmissionSimulation
                 new PacketField("Target IPv4", arp.TargetProtocolAddress.ToString(), 38, 4),
                 new PacketField("Ethernet padding", "Outside the 28-byte ARP message", 42, sent.Length - 42)
             ]);
+            sections.Add(new("ARP message", 14, 28));
+            if (sent.Length > 42) sections.Add(new("Ethernet padding", 42, sent.Length - 42));
         }
         else if (frame.EtherType == (ushort)EtherType.IPv4)
         {
@@ -209,9 +214,14 @@ public static class TransmissionSimulation
             var dataLength = length - headerLength - transportHeaderLength;
             if (dataLength > 0) fields.Add(new PacketField(fragmented ? "IP fragment payload" : isTcp ? "TCP stream data" : "ICMP data", $"{dataLength} B", 14 + headerLength + transportHeaderLength, dataLength));
             if (sent.Length > 14 + length) fields.Add(new PacketField("Ethernet padding", "Excluded from IP total length", 14 + length, sent.Length - 14 - length));
+            sections.Add(new("IPv4 header", 14, headerLength));
+            if (transportHeaderLength > 0) sections.Add(new(isTcp ? "TCP header" : "ICMP header", 14 + headerLength, transportHeaderLength));
+            if (dataLength > 0) sections.Add(new(fragmented ? "Fragment payload" : isTcp ? "TCP data" : "ICMP data", 14 + headerLength + transportHeaderLength, dataLength));
+            if (sent.Length > 14 + length) sections.Add(new("Ethernet padding", 14 + length, sent.Length - 14 - length));
         }
+        else if (sent.Length > 14) sections.Add(new("Payload", 14, sent.Length - 14));
         return new CapturedFrame(number, time, fromA ? "Host A" : "Host B", fromA ? "Host B" : "Host A", protocol, delivery, explanation,
-            sent.Length, Convert.ToHexString(sent), dropped ? "" : Convert.ToHexString(received), fields);
+            sent.Length, Convert.ToHexString(sent), dropped ? "" : Convert.ToHexString(received), fields, sections);
     }
 
     private static SimulationResult RunTcp(SimulationRequest request)

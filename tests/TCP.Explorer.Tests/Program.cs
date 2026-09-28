@@ -52,6 +52,20 @@ Test("A missing fragment triggers the core reassembly timeout and ICMP error", (
     Check(run.Events.Any(entry => entry.Message.Contains("IcmpErrorReceived type 11, code 1")), "No real reassembly error observed");
     Check(run.VirtualDurationMs == 60000, "Unexpected reassembly lifetime");
 });
+Test("Byte-map sections tile every captured frame", () =>
+{
+    foreach (var scenario in new[] { "ping", "fragment", "arp-loss", "tcp" })
+        foreach (var frame in TransmissionSimulation.Run(new SimulationRequest(scenario, "abc", 4000)).Frames)
+        {
+            var next = 0;
+            foreach (var section in frame.Sections)
+            {
+                Check(section.Offset == next && section.Bytes > 0, $"{scenario} #{frame.Number}: gap or overlap at {section.Name}");
+                next += section.Bytes;
+            }
+            Check(next == frame.Length, $"{scenario} #{frame.Number}: sections cover {next} of {frame.Length} B");
+        }
+});
 Test("ARP retries three times and reports resolution failure", () =>
 {
     var run = TransmissionSimulation.Run(new SimulationRequest("arp-loss"));

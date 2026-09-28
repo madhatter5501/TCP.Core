@@ -15,6 +15,7 @@
   --amber: #f1be73;
   --slate: #99acbe;
   --warn: #ffbc9c;
+  --padding: #34475e;
   --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
   --radius: 12px;
   --gutter: 36px;
@@ -56,6 +57,13 @@ code { font-family: var(--mono); font-size: .875rem; overflow-wrap: anywhere; }
 .next-link strong { font-size: .875rem; font-weight: 500; }
 .next-link:hover { background: var(--raised); border-color: #3f536b; }
 .next-link:hover strong { color: var(--green); }
+/* Tool pages: a one-line heading, so the bench below gets the height. */
+.page-heading:has(+ .fill) { align-items: center; margin-bottom: 14px; }
+.page-heading:has(+ .fill) > div { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 14px; }
+.page-heading:has(+ .fill) h1 { order: -1; font-size: clamp(1.4rem, 1.8vw, 1.65rem); }
+.page-heading:has(+ .fill) .eyebrow { margin: 0; font-size: .6875rem; }
+.page-heading:has(+ .fill) p { flex-basis: 100%; max-width: none; margin-top: 4px; font-size: .875rem; }
+.page-heading:has(+ .fill) .next-link { grid-auto-flow: column; align-items: center; gap: 10px; padding: 7px 12px; }
 
 .panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); overflow: hidden; }
 .quiet-button { background: none; color: var(--muted); font-size: .875rem; padding: 8px; }

@@ -6,6 +6,9 @@ export interface TraceEvent { timeMs: number; kind: string; message: string }
 
 export interface PacketField { name: string; value: string; offset: number; bytes: number }
 
+/** A contiguous span of the frame owned by one header or payload; together they tile the whole frame. */
+export interface FrameSection { name: string; offset: number; bytes: number }
+
 export type Delivery = 'Delivered' | 'Dropped' | 'Corrupted';
 
 export interface CapturedFrame {
@@ -20,6 +23,7 @@ export interface CapturedFrame {
   sentHex: string;
   receivedHex: string;
   fields: PacketField[];
+  sections: FrameSection[];
 }
 
 export interface SimulationResult {
