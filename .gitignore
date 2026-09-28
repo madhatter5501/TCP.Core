@@ -6,3 +6,7 @@ riderModule.iml
 node_modules/
 # Built by src/TCP.Explorer/ClientApp (npm run build, or automatically by dotnet build)
 /src/TCP.Explorer/wwwroot/
+
+# Local tool settings
+.claude/
+.idea/
