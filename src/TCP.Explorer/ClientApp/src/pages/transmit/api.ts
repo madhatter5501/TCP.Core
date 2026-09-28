@@ -6,7 +6,7 @@ const timeoutMs = 15000;
 export async function runSimulation(request: SimulationRequest): Promise<SimulationResult> {
   let response: Response;
   try {
-    response = await fetch('/api/simulate', {
+    response = await fetch(`${import.meta.env.BASE_URL}api/simulate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),

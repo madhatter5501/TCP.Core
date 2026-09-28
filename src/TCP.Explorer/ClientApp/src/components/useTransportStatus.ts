@@ -7,7 +7,7 @@ export function useTransportStatus() {
   const [transport, setTransport] = useState<TransportInfo | null>(null);
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/transport', { cache: 'no-store', signal: controller.signal })
+    fetch(`${import.meta.env.BASE_URL}api/transport`, { cache: 'no-store', signal: controller.signal })
       .then(response => (response.ok && response.headers.get('content-type')?.includes('json') ? response.json() : null))
       .then(setTransport)
       // Status is informational; the page works without it.

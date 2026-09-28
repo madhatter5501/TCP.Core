@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+
+jobs:
+  dotnet:
+    name: .NET build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      # Building TCP.Explorer runs npm ci and npm run build for the UI it serves.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/TCP.Explorer/ClientApp/package-lock.json
+      - run: dotnet build TCP.slnx -c Release
+      # Each test project is an executable that exits non-zero when a check fails.
+      - name: TCP.Tests
+        run: dotnet run --no-build -c Release --project tests/TCP.Tests
+      - name: TCP.Transport.Kestrel.Tests
+        run: dotnet run --no-build -c Release --project tests/TCP.Transport.Kestrel.Tests
+      - name: TCP.Explorer.Tests
+        run: dotnet run --no-build -c Release --project tests/TCP.Explorer.Tests
+
+  client:
+    name: Explorer UI tests and Pages build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/TCP.Explorer/ClientApp
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/TCP.Explorer/ClientApp/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      # Project Pages are served from /<repository>/. /api is not available there, so the transmit
+      # lab explains that it needs the ASP.NET host; the other sections are fully static.
+      - run: npm run build -- --base=/${{ github.event.repository.name }}/
+      # Pages answers unknown paths with 404.html; serving the app shell there keeps deep links working.
+      - run: cp ../wwwroot/index.html ../wwwroot/404.html
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: src/TCP.Explorer/wwwroot
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [dotnet, client]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
