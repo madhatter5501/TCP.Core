@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 
 // The ASP.NET host serves the build from ../wwwroot and answers /api. During `npm run dev`,
 // Vite serves the UI and forwards /api to a running `dotnet run --project src/TCP.Explorer`.
+// To serve from a sub-path, such as /TCP.Core/ on GitHub Pages, build with `npm run build -- --base=/TCP.Core/`.
 export default defineConfig({
   plugins: [react()],
   build: { outDir: '../wwwroot', emptyOutDir: true },

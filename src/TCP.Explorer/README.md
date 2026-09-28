@@ -22,6 +22,12 @@ For UI work with hot reload, keep the host running for `/api` and start Vite bes
 npm --prefix src/TCP.Explorer/ClientApp run dev
 ```
 
+## GitHub Pages
+
+`.github/workflows/ci.yml` builds and tests the solution and the UI on every push and pull request. Pushes to `main` then publish the UI to GitHub Pages at `https://<owner>.github.io/<repository>/`. Enable it once under **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+Pages hosts static files only, so there is no `/api` there. The layers, sizes and concepts sections work unchanged. The transmit lab explains that real-code transmissions need the ASP.NET host. To reproduce the Pages build locally, run `npm run build -- --base=/<repository>/`.
+
 ## Explore
 
 Each section is its own page with a single intent. Every URL is linkable; the host falls back to `index.html` for client routes. On desktop-sized windows the tool pages (layers, transmit, sizes) fill the viewport and their panes scroll independently, so nothing needs a page scroll; narrow or short windows fall back to normal flow.
