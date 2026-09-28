@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading.Channels;
@@ -36,6 +37,7 @@ internal sealed class TcpCoreConnection : ConnectionContext
     private readonly TcpCoreHostService _host;
     private readonly TcpConnection _tcp;
     private readonly Pipe _inbound = new(TransportPipeOptions);   // TCP -> Kestrel
+    private readonly InputReader _inputReader;                    // Kestrel's end of _inbound
     private readonly Pipe _outbound = new(TransportPipeOptions);  // Kestrel -> TCP
     private readonly Channel<byte[]> _input = Channel.CreateUnbounded<byte[]>(
         new UnboundedChannelOptions { SingleReader = true, SingleWriter = true });
@@ -62,7 +64,8 @@ internal sealed class TcpCoreConnection : ConnectionContext
     {
         _host = host;
         _tcp = tcp;
-        Transport = new DuplexPipe(_inbound.Reader, _outbound.Writer);
+        _inputReader = new InputReader(_inbound.Reader);
+        Transport = new DuplexPipe(_inputReader, _outbound.Writer);
         LocalEndPoint = new IPEndPoint(host.Address, tcp.LocalPort);
         RemoteEndPoint = new IPEndPoint(tcp.RemoteAddress, tcp.RemotePort);
         tcp.DataAvailable += OnDataAvailable;
@@ -138,6 +141,7 @@ internal sealed class TcpCoreConnection : ConnectionContext
     private async Task PumpInputAsync()
     {
         Exception? error = null;
+        long pumped = 0;
         try
         {
             while (await _input.Reader.WaitToReadAsync(_pumpAbort.Token))
@@ -146,12 +150,15 @@ internal sealed class TcpCoreConnection : ConnectionContext
                 {
                     var flush = await _inbound.Writer.WriteAsync(bytes, _pumpAbort.Token);
                     Interlocked.Add(ref _queuedInputBytes, -bytes.Length);
+                    pumped += bytes.Length;
                     if (flush.IsCompleted) return; // Kestrel stopped reading.
                 }
                 // The queue drained: let the protocol thread move any bytes TCP is still holding. Without
                 // this, data that arrived while the queue was full (including a FIN) would never be read.
                 await ScheduleWithRetryAsync(MoveInput);
             }
+            // End of stream: hold it back until Kestrel has examined every byte before it (see InputReader).
+            await _inputReader.WaitUntilExaminedAsync(pumped, _pumpAbort.Token);
         }
         catch (OperationCanceledException) when (_pumpAbort.IsCancellationRequested)
         {
@@ -263,7 +270,7 @@ internal sealed class TcpCoreConnection : ConnectionContext
     public override async ValueTask DisposeAsync()
     {
         await _outbound.Writer.CompleteAsync(); // No more response bytes.
-        await _inbound.Reader.CompleteAsync();  // The application no longer reads; releases the input pump.
+        await _inputReader.CompleteAsync();     // The application no longer reads; releases the input pump.
         _input.Writer.TryComplete();
         if (await Task.WhenAny(_outputPump, Task.Delay(OutputDrainTimeout)) != _outputPump || !_outputClosedGracefully)
             Abort(new ConnectionAbortedException("Kestrel disposed the connection before its output completed."));
@@ -271,6 +278,82 @@ internal sealed class TcpCoreConnection : ConnectionContext
         await Task.WhenAll(_inputPump, _outputPump);
         Detach(null);
         _pumpAbort.Dispose();
+    }
+
+    /// <summary>
+    /// Kestrel's input pipe reader. Kestrel treats a read that returns end of stream as the client aborting,
+    /// even when the same read also holds the rest of a request body, so a FIN that follows the body closely
+    /// could reset the connection instead of getting a response. Tracking how far Kestrel has examined lets
+    /// the input pump deliver end of stream only after Kestrel has seen every byte before it.
+    /// </summary>
+    private sealed class InputReader(PipeReader inner) : PipeReader
+    {
+        private readonly Lock _gate = new();
+        private ReadOnlySequence<byte> _buffer; // The last read's buffer; only the reading thread uses it.
+        private long _consumed;                 // Stream offset of _buffer.Start.
+        private long _examined;                 // Stream offset Kestrel has examined up to.
+        private long _waitTarget;
+        private TaskCompletionSource? _caughtUp;
+        private bool _completed;
+
+        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            var result = await inner.ReadAsync(cancellationToken);
+            _buffer = result.Buffer;
+            return result;
+        }
+
+        public override bool TryRead(out ReadResult result)
+        {
+            if (!inner.TryRead(out result)) return false;
+            _buffer = result.Buffer;
+            return true;
+        }
+
+        public override void AdvanceTo(SequencePosition consumed) => AdvanceTo(consumed, consumed);
+
+        public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+        {
+            // Measure before advancing: the pipe may recycle the consumed segments.
+            var consumedBytes = _buffer.Slice(_buffer.Start, consumed).Length;
+            var examinedBytes = _buffer.Slice(_buffer.Start, examined).Length;
+            _buffer = default;
+            inner.AdvanceTo(consumed, examined);
+            TaskCompletionSource? release = null;
+            lock (_gate)
+            {
+                _examined = Math.Max(_examined, _consumed + examinedBytes);
+                _consumed += consumedBytes;
+                if (_caughtUp is not null && _examined >= _waitTarget) (release, _caughtUp) = (_caughtUp, null);
+            }
+            release?.TrySetResult();
+        }
+
+        /// <summary>Completes once Kestrel has examined <paramref name="length"/> bytes, or stops reading.</summary>
+        public Task WaitUntilExaminedAsync(long length, CancellationToken cancellationToken)
+        {
+            lock (_gate)
+            {
+                if (_completed || _examined >= length) return Task.CompletedTask;
+                _waitTarget = length;
+                _caughtUp = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                return _caughtUp.Task.WaitAsync(cancellationToken);
+            }
+        }
+
+        public override void CancelPendingRead() => inner.CancelPendingRead();
+
+        public override void Complete(Exception? exception = null)
+        {
+            inner.Complete(exception);
+            TaskCompletionSource? release;
+            lock (_gate)
+            {
+                _completed = true;
+                (release, _caughtUp) = (_caughtUp, null);
+            }
+            release?.TrySetResult();
+        }
     }
 
     private sealed class DuplexPipe(PipeReader input, PipeWriter output) : IDuplexPipe
