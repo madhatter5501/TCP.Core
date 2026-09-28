@@ -17,7 +17,7 @@ interoperability with an operating-system TCP stack.
 | 4. Explorer integration | Done (virtual link) | `sockets` (default) and `tcp-core` modes. `tcp-core` requires an explicit interface and IPv4 address, binds only the TCP.Core endpoint, and fails clearly rather than falling back. Shared `MapExplorer` setup; `/api/transport` and a footer label show the serving transport. |
 | Project boundaries | Done | `TCP.Networking.Pcap` holds the libpcap interface and `PcapNetworkConfiguration`; `TCP.Host` and `TCP.Transport.Kestrel` both reference it, and nothing references the Host executable. |
 | Deterministic HTTP tests | Passing (21) | `tests/TCP.Transport.Kestrel.Tests`, stable across repeated runs (~55 s): 11 HTTP/1.1 and 10 HTTP/2 (h2c). See below. |
-| HTTP/2 | h2c done (virtual link); h2 blocked on TLS | Cleartext HTTP/2 with prior knowledge on an `Http2`-only endpoint. Browsers need `h2` over TLS with ALPN; see "HTTP/2" below. |
+| HTTP/2 | h2c done (virtual link); h2 not wired to TLS yet | Cleartext HTTP/2 with prior knowledge on an `Http2`-only endpoint. Browsers need `h2` over TLS with ALPN; see "HTTP/2" below. |
 | 5. Live browser / packet capture | Not started | Follows stage 1. |
 
 Defects found and fixed while finishing stages 2–4:
@@ -82,12 +82,13 @@ frames that actually crossed TCP:
 - **Browsers do not use h2c.** Set `TCP_EXPLORER_H2C_PORT` to add the h2c endpoint to the
   Explorer beside the HTTP/1.1 port, then test with
   `curl --http2-prior-knowledge http://<address>:<h2c port>/api/transport`.
-- **h2 over TLS is blocked on the TLS work.** Browsers speak HTTP/2 only as `h2` over TLS,
-  chosen with ALPN (RFC 7301) in the handshake. `src/TCP.Core/L5_7.Application/Tls` has
-  records, alerts and cryptography so far, but no handshake or ALPN extension. When it
-  does, the Kestrel side needs a connection middleware (or `UseHttps` over the TCP.Core
-  connection) that sets `ITlsConnectionFeature` and `ITlsApplicationProtocolFeature`
-  ("h2" or "http/1.1"), so an `Http1AndHttp2` endpoint picks the protocol per connection.
+- **h2 over TLS is not wired up yet.** Browsers speak HTTP/2 only as `h2` over TLS, chosen
+  with ALPN (RFC 7301) in the handshake. `TCP.L5_7.Application.Tls` now negotiates ALPN
+  (`TlsOptions.ApplicationProtocols = ["h2", "http/1.1"]`, result in
+  `TlsConnection.ApplicationProtocol`), but the Kestrel transport does not use it. The
+  remaining work is a TCP.Core TLS connection middleware for Kestrel that sets
+  `ITlsConnectionFeature` and `ITlsApplicationProtocolFeature` from the negotiated
+  protocol, so an `Http1AndHttp2` endpoint picks HTTP/2 or HTTP/1.1 per connection.
 
 ### Known limitations relevant to live use
 
