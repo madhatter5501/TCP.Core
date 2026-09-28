@@ -26,7 +26,7 @@ export const glossary: GlossaryEntry[] = [
   {
     id: 'ack', term: 'ACK', expansion: 'Acknowledgment', layers: ['transport'], matches: ['ACK', 'ACKs'],
     definition: 'A TCP flag and 32-bit field. The acknowledgment number is the next byte the receiver expects, so it confirms every byte before it (a cumulative acknowledgment). Repeated identical ACKs (duplicate ACKs) hint that a segment went missing.',
-    inCode: 'TCP.Core acknowledges immediately; it does not delay ACKs.',
+    inCode: 'Delayed ACKs are on by default: TCP.Core acknowledges every second full segment, or after 200 ms.',
     related: ['sequence-number', 'retransmission'], see: { to: '/transmit?scenario=tcp-loss', label: 'Watch duplicate ACKs after a loss' }
   },
   {
@@ -47,15 +47,21 @@ export const glossary: GlossaryEntry[] = [
     related: ['pseudo-header', 'fcs'], see: { to: '/transmit?scenario=checksum', label: 'Corrupt an IPv4 checksum' }
   },
   {
+    id: 'collision', term: 'Collisions & late collisions', layers: ['physical', 'link'], matches: ['late collision', 'late collisions'],
+    definition: 'On a shared half-duplex segment, two stations transmitting at once garble each other’s frames. CSMA/CD detects this, sends a jam signal, and both retry after a random backoff, so some collisions are normal on a hub. A late collision is detected after the first 64 bytes (the slot time) have gone out. That should never happen on a correctly built network, so it points to an overlong cable or a duplex mismatch. On a full-duplex switch link the collision counters should stay at zero.',
+    inCode: 'Not modeled; links in this stack never collide.',
+    related: ['slot-time', 'duplex-mismatch', 'runt']
+  },
+  {
     id: 'congestion-control', term: 'Congestion control', layers: ['transport'],
     definition: 'Sender-side pacing that protects the network, separate from the receiver’s window. The congestion window starts small (slow start), grows while data is acknowledged, and shrinks when loss suggests the path is overloaded.',
-    inCode: 'Slow start, congestion avoidance, fast retransmit and NewReno recovery (RFC 5681, RFC 6582).',
+    inCode: 'CUBIC by default (RFC 9438), or NewReno (RFC 5681, RFC 6582); a ten-segment initial window, fast retransmit, SACK-based recovery and ECN.',
     related: ['window', 'retransmission']
   },
   {
     id: 'crc', term: 'CRC', expansion: 'Cyclic redundancy check', layers: ['link'], matches: ['CRC'],
-    definition: 'An error-detecting code computed by polynomial division over the data. Much stronger than a simple sum at catching burst errors on the wire. Ethernet’s FCS is a 32-bit CRC.',
-    related: ['fcs', 'checksum']
+    definition: 'An error-detecting code computed by polynomial division over the data. Much stronger than a simple sum at catching burst errors on the wire. Ethernet’s FCS is a 32-bit CRC. Switches and routers count frames that fail it as CRC or input errors; a steadily rising count points to a bad cable, electrical noise, or a duplex mismatch.',
+    related: ['fcs', 'checksum', 'duplex-mismatch']
   },
   {
     id: 'datagram', term: 'Datagram', layers: ['network', 'transport'],
@@ -69,6 +75,12 @@ export const glossary: GlossaryEntry[] = [
     related: ['fragment', 'path-mtu', 'mf'], see: { to: '/transmit?scenario=df', label: 'Send an oversized DF packet' }
   },
   {
+    id: 'duplex-mismatch', term: 'Duplex mismatch', layers: ['physical', 'link'], matches: ['duplex mismatch'],
+    definition: 'One end of a link runs full duplex (sends whenever it likes) while the other runs half duplex (backs off when it hears traffic). The half-duplex side counts late collisions; the full-duplex side counts CRC errors and runts from the frames the other side abandons. The link still passes traffic but is slow and lossy under load. The usual cause is one side hard-coded to full duplex while the other autonegotiates, fails to hear a partner offer, and falls back to half.',
+    inCode: 'Not modeled.',
+    related: ['collision', 'runt', 'crc']
+  },
+  {
     id: 'encapsulation', term: 'Encapsulation', layers: [],
     definition: 'Wrapping one layer’s data inside the next layer’s header (and sometimes trailer) on the way down; decapsulation unwraps it on the way up. Application data becomes a TCP segment, inside an IP datagram, inside an Ethernet frame.',
     related: ['pdu'], see: { to: '/layers/application', label: 'Walk the layers' }
@@ -77,7 +89,7 @@ export const glossary: GlossaryEntry[] = [
     id: 'ethernet-frame', term: 'Ethernet frame', layers: ['link'],
     definition: 'The link-layer PDU: destination MAC, source MAC, optional VLAN tag, EtherType, payload (padded to a minimum), then the FCS. An untagged frame carrying a 1500-byte IP packet is 1518 bytes including the FCS.',
     inCode: 'L2.Link/Ethernet/EthernetFrame.cs. Serialized frames exclude preamble and FCS.',
-    related: ['mac-address', 'ethertype', 'fcs', 'padding'], see: { to: '/layers/link/headers', label: 'Ethernet header fields' }
+    related: ['mac-address', 'ethertype', 'fcs', 'padding', 'giant', 'jumbo-frame'], see: { to: '/layers/link/headers', label: 'Ethernet header fields' }
   },
   {
     id: 'ethertype', term: 'EtherType', layers: ['link'], matches: ['EtherType'],
@@ -112,6 +124,12 @@ export const glossary: GlossaryEntry[] = [
     related: ['fragment', 'mf']
   },
   {
+    id: 'giant', term: 'Giant', layers: ['link'], matches: ['giant', 'giants'],
+    definition: 'A received frame longer than the link allows: over 1518 bytes including the FCS, or 1522 with a VLAN tag. Typical causes are jumbo frames arriving on a port not configured for them, a VLAN tag the receiving port does not expect, or a faulty NIC. The receiving port counts and drops it.',
+    inCode: 'LearningBridge silently drops frames longer than a port’s MaximumFrameLength (default 1518 without FCS, room for a tagged 1500-byte payload).',
+    related: ['runt', 'jumbo-frame', 'ethernet-frame']
+  },
+  {
     id: 'handshake', term: 'Three-way handshake', layers: ['transport'], matches: ['three-way handshake'],
     definition: 'How TCP opens a connection: SYN, then SYN-ACK, then ACK. Each side picks an initial sequence number and advertises options such as MSS.',
     related: ['syn', 'ack', 'mss'], see: { to: '/transmit?scenario=tcp', label: 'See a handshake' }
@@ -139,6 +157,12 @@ export const glossary: GlossaryEntry[] = [
     related: ['datagram', 'ttl', 'next-hop'], see: { to: '/layers/network', label: 'The network layer' }
   },
   {
+    id: 'jumbo-frame', term: 'Jumbo frame', layers: ['link'], matches: ['jumbo frame', 'jumbo frames'],
+    definition: 'An Ethernet frame carrying more than the standard 1500-byte payload, commonly with a 9000-byte MTU. Fewer, larger frames cut header overhead and per-packet work, which helps storage and data-center traffic. Jumbo frames are outside the IEEE standard, so every device on the segment must agree on the size. A switch left at 1500 drops them as giants, and because it works at layer 2 it sends no ICMP, so path MTU discovery cannot recover.',
+    inCode: 'IPv4Host accepts any MTU from 68 to 65535, so a jumbo link can be simulated; a LearningBridge port’s MaximumFrameLength must be raised to match.',
+    related: ['mtu', 'giant', 'path-mtu'], see: { to: '/sizes', label: 'Try a 9000-byte MTU' }
+  },
+  {
     id: 'mac-address', term: 'MAC address', expansion: 'Media Access Control address', layers: ['link'], matches: ['MAC', 'MACs'],
     definition: 'A 48-bit hardware address, written like 02:00:00:00:00:0A. It only has meaning on the local link: to reach a remote host, a frame is addressed to the gateway’s MAC.',
     related: ['arp', 'next-hop', 'broadcast']
@@ -163,13 +187,13 @@ export const glossary: GlossaryEntry[] = [
     id: 'mss', term: 'MSS', expansion: 'Maximum Segment Size', layers: ['transport'], matches: ['MSS'],
     definition: 'The most TCP data (excluding headers) a host wants in one segment, advertised in the SYN. It is normally the MTU minus 40 bytes of fixed IPv4 and TCP headers: 1460 on Ethernet. Header options reduce the data actually sent.',
     inCode: 'A peer that sends no MSS option is assumed to accept 536 bytes.',
-    related: ['mtu', 'segment', 'syn'], see: { to: '/sizes', label: 'Experiment with MSS' }
+    related: ['mtu', 'segment', 'syn', 'tunnel-overhead'], see: { to: '/sizes', label: 'Experiment with MSS' }
   },
   {
     id: 'mtu', term: 'MTU', expansion: 'Maximum Transmission Unit', layers: ['link', 'network'], matches: ['MTU', 'MTUs'],
     definition: 'The largest IP packet, including its IP header, a link can carry in one frame: 1500 bytes for standard Ethernet. It excludes the Ethernet header and FCS.',
     inCode: 'IPv4Host defaults to 1500. Off-subnet sends are capped at 576 bytes.',
-    related: ['path-mtu', 'mss', 'fragment'], see: { to: '/sizes', label: 'Experiment with MTU' }
+    related: ['path-mtu', 'mss', 'fragment', 'jumbo-frame', 'tunnel-overhead'], see: { to: '/sizes', label: 'Experiment with MTU' }
   },
   {
     id: 'nagle', term: 'Nagle’s algorithm', layers: ['transport'],
@@ -191,13 +215,13 @@ export const glossary: GlossaryEntry[] = [
     id: 'padding', term: 'Padding', layers: ['link'],
     definition: 'Filler bytes added so an Ethernet frame reaches its 60-byte minimum (64 with FCS). A receiver uses the IP total length to ignore them.',
     inCode: 'EthernetFrame.Serialize pads to 60 bytes.',
-    related: ['ethernet-frame']
+    related: ['ethernet-frame', 'slot-time', 'runt']
   },
   {
     id: 'path-mtu', term: 'Path MTU', layers: ['network'], matches: ['path MTU', 'Path MTU'],
     definition: 'The smallest MTU along the whole route to a destination. Path MTU discovery sends DF packets and shrinks them when routers report “fragmentation needed.” If those ICMP messages are blocked, large packets vanish: a black hole.',
-    inCode: 'TCP lowers its packet budget on validated fragmentation-needed errors; it does not probe upward again.',
-    related: ['mtu', 'df', 'icmp']
+    inCode: 'TCP lowers its packet budget on validated fragmentation-needed errors, shrinks segments after repeated silent timeouts (black-hole detection, RFC 4821), and tries the larger MTU again after 10 minutes (PathMtuRaiseInterval).',
+    related: ['mtu', 'df', 'icmp', 'tunnel-overhead']
   },
   {
     id: 'pdu', term: 'PDU', expansion: 'Protocol Data Unit', layers: [], matches: ['PDU', 'PDUs'],
@@ -247,6 +271,12 @@ export const glossary: GlossaryEntry[] = [
     related: ['rto']
   },
   {
+    id: 'runt', term: 'Runt', layers: ['link'], matches: ['runt', 'runts'],
+    definition: 'A received frame shorter than the 64-byte minimum. On a half-duplex segment a runt is usually what is left of a collision: the sender stopped partway through. On a full-duplex link runts point to a duplex mismatch or a faulty NIC or cable. Senders avoid creating them by padding short frames.',
+    inCode: 'EthernetFrame pads outgoing frames to 60 bytes (64 with FCS). LearningBridge forwards a short frame as long as its header is intact, padding it on the way out.',
+    related: ['padding', 'slot-time', 'collision', 'giant']
+  },
+  {
     id: 'segment', term: 'Segment', layers: ['transport'],
     definition: 'TCP’s PDU: a TCP header plus a slice of the byte stream. Segment boundaries are invisible to applications, which see only a stream of bytes.',
     related: ['mss', 'sequence-number', 'datagram'], see: { to: '/layers/transport', label: 'The transport layer' }
@@ -255,6 +285,12 @@ export const glossary: GlossaryEntry[] = [
     id: 'sequence-number', term: 'Sequence number', layers: ['transport'],
     definition: 'The 32-bit position of a segment’s first data byte in the stream. Receivers use it to reorder, discard duplicates and acknowledge. It wraps around after 4 GiB.',
     related: ['ack', 'segment']
+  },
+  {
+    id: 'slot-time', term: 'Slot time', layers: ['physical', 'link'], matches: ['slot time'],
+    definition: 'The 512 bit times (64 bytes; 51.2 µs at 10 Mb/s) that set Ethernet’s minimum frame size. In half-duplex CSMA/CD a sender only notices a collision while it is still transmitting, and the collision has to travel from the far end of the largest allowed network and back. A frame of at least 64 bytes guarantees the sender is still talking when it arrives. 64 = 14 header + 46 payload + 4 FCS, which is why shorter payloads are padded to 46 bytes. Full-duplex links cannot collide but keep the minimum for compatibility.',
+    inCode: 'MinimumFrameLengthWithoutFcs is 60: the 64-byte minimum less the FCS the hardware appends.',
+    related: ['padding', 'collision', 'runt', 'ethernet-frame']
   },
   {
     id: 'syn', term: 'SYN', expansion: 'Synchronize', layers: ['transport'], matches: ['SYN'],
@@ -273,9 +309,15 @@ export const glossary: GlossaryEntry[] = [
     related: ['icmp']
   },
   {
+    id: 'tunnel-overhead', term: 'Tunnel overhead', layers: ['link', 'network'], matches: ['tunnel overhead'],
+    definition: 'Extra headers a tunnel or added encapsulation puts inside the same link MTU, leaving less room for the inner packet: PPPoE takes 8 bytes (MTU 1492), GRE 24 (1476), and IPsec a variable 50–80 or so, which is why VPN interfaces are often set to 1400. TCP through the tunnel needs a smaller MSS to match, so routers commonly rewrite the MSS option in passing SYNs (MSS clamping; “ip tcp adjust-mss 1360” on Cisco). Without it, and with fragmentation-needed errors blocked, the classic symptom appears: ping and small requests work while large transfers hang.',
+    inCode: 'No tunnels are implemented. TCP honors a smaller peer MSS and shrinks its packets on validated fragmentation-needed errors.',
+    related: ['mss', 'mtu', 'path-mtu', 'encapsulation'], see: { to: '/sizes', label: 'Try the PPPoE MTU' }
+  },
+  {
     id: 'udp', term: 'UDP', expansion: 'User Datagram Protocol', layers: ['transport'], matches: ['UDP'],
     definition: 'A minimal transport: ports, a length and a checksum over IP’s datagram service. No connection, retransmission or ordering; message boundaries are preserved.',
-    inCode: 'Not implemented yet.',
+    inCode: 'L4.Transport/Udp: UdpHost binds ports and UdpSocket sends and receives datagrams, reporting ICMP errors such as port unreachable to the application.',
     related: ['datagram', 'port'], see: { to: '/concepts/datagram', label: 'Datagrams vs streams' }
   },
   {
@@ -287,7 +329,7 @@ export const glossary: GlossaryEntry[] = [
   {
     id: 'window', term: 'Receive window', layers: ['transport'], matches: ['receive window', 'zero window', 'zero-window'],
     definition: 'Flow control: how many more bytes the receiver can buffer, advertised in every segment. At zero the sender stops and sends periodic probes until space opens.',
-    inCode: '16-bit windows (no window scaling); 65,535-byte default receive capacity.',
+    inCode: 'The field is 16 bits (65,535 bytes); window scaling (RFC 7323) is on by default and lets the window grow to the 256 KiB default receive buffer, or up to 16 MiB.',
     related: ['congestion-control'], see: { to: '/transmit?scenario=tcp-window', label: 'Zero-window recovery' }
   }
 ];
