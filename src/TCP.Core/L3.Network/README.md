@@ -73,7 +73,7 @@ transit, multicast group membership and IGMP, DHCP, and IPv6. The TCP segment co
 can checksum IPv6 segments, but no IPv6 network layer exists.
 
 For how MTU here relates to TCP's MSS, see
-[docs/STANDARDS.md](../../../docs/STANDARDS.md#mtu-versus-mss).
+[docs/standards.md](../../../docs/standards.md#mtu-versus-mss).
 
 ## Verification
 

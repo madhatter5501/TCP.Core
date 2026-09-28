@@ -38,7 +38,7 @@ sudo TCP_EXPLORER_TRANSPORT=tcp-core TCP_EXPLORER_INTERFACE=en0 TCP_EXPLORER_ADD
 | `TCP_EXPLORER_H2C_PORT` | Optional separate port for cleartext HTTP/2 with prior knowledge (`curl --http2-prior-knowledge`) |
 | `TCP_EXPLORER_MTU` | Link MTU (default 1500) |
 
-Browse to the configured address from another machine on the subnet; the host OS does not own that address. This mode is tested only over a virtual link so far; live-network validation is still open in [docs/TCP-WEB-SERVER-PLAN.md](../../docs/TCP-WEB-SERVER-PLAN.md).
+Browse to the configured address from another machine on the subnet; the host OS does not own that address. This mode is tested only over a virtual link so far; live-network validation is still open in [docs/tcp-web-server-plan.md](../../docs/tcp-web-server-plan.md).
 
 ## Explore
 
@@ -62,7 +62,7 @@ Each section is its own page with a single intent. Every URL is linkable; the ho
 
 ## Model boundaries
 
-The content reflects the checked-in implementation as reviewed on 2026-09-27. It intentionally uses source rather than `docs/STANDARDS.md` where that document has fallen behind the implementation. Maintain `ClientApp/src/content/layers.ts` as the stack evolves.
+The content reflects the checked-in implementation as reviewed on 2026-09-27. It intentionally uses source rather than `docs/standards.md` where that document has fallen behind the implementation. Maintain `ClientApp/src/content/layers.ts` as the stack evolves.
 
 The transmission lab references and executes TCP.Core against two in-memory interfaces. It never opens a physical NIC or sends packets onto your network. The original layer canvas illustrates TCP conceptually; the actual ICMP ping path bypasses L4. The five-layer diagram groups OSI layers 5–7. Diagram blocks are not to byte scale.
 

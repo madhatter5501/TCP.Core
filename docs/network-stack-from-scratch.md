@@ -1,4 +1,4 @@
-# C# Network Stack From Scratch
+# C# network stack from scratch
 
 ## Goal
 
@@ -43,9 +43,7 @@ curl http://<my-stack-ip>/
 
 should communicate with TCP and HTTP implemented by my own C# code.
 
----
-
-# What I'm Building
+## What I'm building
 
 ```text
 Application
@@ -73,11 +71,9 @@ The OS/NIC still handles actual transmission and reception of physical Ethernet 
 
 Everything above that boundary should progressively become my implementation.
 
----
+## Principles
 
-# Principles
-
-## Don't Hide the Protocol
+### Don't hide the protocol
 
 Avoid using abstractions that implement the protocol I'm trying to learn.
 
@@ -102,7 +98,7 @@ My TCP implementation should deal with:
 - connection establishment
 - connection termination
 
-## RFC → Code → Wireshark
+### RFC → code → Wireshark
 
 The primary learning loop:
 
@@ -122,9 +118,7 @@ Fix understanding
 
 Wireshark is effectively the debugger for the network stack.
 
----
-
-# Suggested Solution Structure
+## Suggested solution structure
 
 ```text
 NetworkStack/
@@ -176,11 +170,9 @@ NetworkStack/
 
 The exact architecture should evolve as understanding improves.
 
----
+## Phase 1 — Ethernet
 
-# Phase 1 — Ethernet
-
-## Objective
+### Objective
 
 Understand Ethernet frames and Layer 2 addressing.
 
@@ -221,7 +213,7 @@ Important EtherTypes:
 0x86DD → IPv6
 ```
 
-### Milestone
+#### Milestone
 
 Given raw bytes, print:
 
@@ -232,11 +224,9 @@ EtherType:       ARP
 Payload Length:  28
 ```
 
----
+## Phase 2 — ARP
 
-# Phase 2 — ARP
-
-## Objective
+### Objective
 
 Understand how IPv4 addresses are mapped onto Layer 2 addresses.
 
@@ -269,7 +259,7 @@ IP              MAC
 10.0.0.2        AA:BB:CC:DD:EE:FF
 ```
 
-### Milestone
+#### Milestone
 
 The OS sends:
 
@@ -281,11 +271,9 @@ My C# stack replies with its MAC address.
 
 The operating system should then populate its ARP/neighbor table with my stack.
 
----
+## Phase 3 — IPv4
 
-# Phase 3 — IPv4
-
-## Objective
+### Objective
 
 Understand Layer 3 packet delivery.
 
@@ -317,7 +305,7 @@ IPv4
     └── Protocol 17 → UDP
 ```
 
-### Milestone
+#### Milestone
 
 Given an IPv4 packet:
 
@@ -330,11 +318,9 @@ TTL:           64
 Protocol:      TCP
 ```
 
----
+## Phase 4 — ICMP
 
-# Phase 4 — ICMP
-
-## Objective
+### Objective
 
 Get the first real interoperability test working.
 
@@ -368,7 +354,7 @@ Reply from <my-stack-ip>
 ```
 
 
-### Running the stack
+#### Running the stack
 
 Protocol implementations live in `TCP.Core.csproj`; executable hosting and libpcap support live in `Host/TCP.Host.csproj`.
 
@@ -387,7 +373,7 @@ dotnet run --project Host/TCP.Host.csproj -- --serve --interface en7 --ip 172.16
 
 The process uses libpcap/BPF for Ethernet capture and injection. Ping from a client whose packets reach that interface; a VPN may route same-host traffic through a tunnel instead.
 
-### Major Milestone
+#### Major milestone
 
 ```bash
 ping <my-stack-ip>
@@ -406,11 +392,9 @@ ICMP     ✓
 
 are working together.
 
----
+## Phase 5 — UDP
 
-# Phase 5 — UDP
-
-## Objective
+### Objective
 
 Learn the simpler Layer 4 protocol before tackling TCP.
 
@@ -438,15 +422,13 @@ My UDP Stack
 "Hello"
 ```
 
-### Milestone
+#### Milestone
 
 A normal OS UDP client communicates with my C# UDP implementation.
 
----
+## Phase 6 — TCP segment parsing
 
-# Phase 6 — TCP Segment Parsing
-
-## Objective
+### Objective
 
 Understand the TCP wire format before implementing TCP behavior.
 
@@ -495,9 +477,7 @@ FIN:         false
 Window:      65535
 ```
 
----
-
-# Phase 7 — TCP State Machine
+## Phase 7 — TCP state machine
 
 Implement the TCP connection states.
 
@@ -529,9 +509,7 @@ ESTABLISHED
 
 Represent this explicitly rather than hiding it inside socket abstractions.
 
----
-
-# Phase 8 — TCP Three-Way Handshake
+## Phase 8 — TCP three-way handshake
 
 This is the first major TCP milestone.
 
@@ -557,7 +535,7 @@ Implement:
 - ACK validation
 - connection tracking
 
-### Major Milestone
+#### Major milestone
 
 Use a **normal operating-system TCP client** against my implementation.
 
@@ -573,9 +551,7 @@ If `ConnectAsync()` succeeds:
 
 **my TCP implementation successfully interoperated with the OS TCP stack.**
 
----
-
-# Phase 9 — TCP Data
+## Phase 9 — TCP data
 
 Once connected:
 
@@ -609,9 +585,7 @@ LEN = 5
 next expected sequence = N + 5
 ```
 
----
-
-# Phase 10 — Retransmission
+## Phase 10 — Retransmission
 
 TCP must handle packet loss.
 
@@ -639,9 +613,7 @@ Implement initially:
 
 Then study proper TCP RTT/RTO behavior.
 
----
-
-# Phase 11 — Flow Control
+## Phase 11 — Flow control
 
 Implement the TCP receive window.
 
@@ -666,9 +638,7 @@ Explore:
 - zero-window conditions
 - window updates
 
----
-
-# Phase 12 — TCP Connection Shutdown
+## Phase 12 — TCP connection shutdown
 
 Implement:
 
@@ -693,9 +663,7 @@ Experiment with half-closed connections.
 
 Understand **why TIME_WAIT exists** instead of simply memorizing that it does.
 
----
-
-# Phase 13 — HTTP
+## Phase 13 — HTTP
 
 Once TCP works, put an extremely small HTTP implementation on top.
 
@@ -715,7 +683,7 @@ Content-Length: 30
 Hello from my C# network stack
 ```
 
-### Final Milestone
+#### Final milestone
 
 Run:
 
@@ -745,9 +713,7 @@ HTTP
 
 implemented by my C# code.
 
----
-
-# C# Features Worth Using
+## C# features worth using
 
 This project should also be an opportunity to understand systems-oriented modern C#.
 
@@ -796,9 +762,7 @@ Avoid unnecessary abstractions initially.
 
 The bytes **are part of the lesson**.
 
----
-
-# Testing Strategy
+## Testing strategy
 
 Every protocol should have unit tests using known byte sequences.
 
@@ -832,9 +796,7 @@ but don't rely exclusively on round-trip tests because the parser and serializer
 
 Use known-good packet captures as test vectors.
 
----
-
-# Wireshark
+## Wireshark
 
 Capture everything.
 
@@ -866,9 +828,7 @@ Payload
 
 When something fails, inspect the actual bytes before changing the code.
 
----
-
-# Specifications
+## Specifications
 
 Use the RFCs as specifications rather than tutorials.
 
@@ -885,11 +845,9 @@ TCP          RFC 9293
 
 Additional TCP RFCs will become relevant when implementing congestion control and modern TCP behavior.
 
----
+## Progress
 
-# Progress
-
-## Layer 2
+### Layer 2
 
 - [x] Ethernet frame parser
 - [x] Ethernet frame serializer
@@ -900,7 +858,7 @@ Additional TCP RFCs will become relevant when implementing congestion control an
 - [x] ARP cache
 - [x] Respond to ARP request
 
-## Layer 3
+### Layer 3
 
 - [x] IPv4 parser
 - [x] IPv4 serializer
@@ -910,7 +868,7 @@ Additional TCP RFCs will become relevant when implementing congestion control an
 - [x] ICMP Echo Reply
 - [x] **Ping works**
 
-## Layer 4 — UDP
+### Layer 4 — UDP
 
 - [ ] UDP parser
 - [ ] UDP serializer
@@ -918,7 +876,7 @@ Additional TCP RFCs will become relevant when implementing congestion control an
 - [ ] UDP echo server
 - [ ] **OS UDP client works**
 
-## Layer 4 — TCP
+### Layer 4 — TCP
 
 - [ ] TCP parser
 - [ ] TCP serializer
@@ -939,15 +897,13 @@ Additional TCP RFCs will become relevant when implementing congestion control an
 - [ ] TIME_WAIT
 - [ ] **OS TcpClient works**
 
-## Application
+### Application
 
 - [ ] Minimal HTTP parser
 - [ ] HTTP response
 - [ ] **curl works**
 
----
-
-# Success Criteria
+## Success criteria
 
 The project is successful when I can explain **why each packet exists**, not merely make the tests pass.
 

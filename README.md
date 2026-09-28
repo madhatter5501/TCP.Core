@@ -6,7 +6,7 @@ with XML documentation that cites the RFC or IEEE standard it follows, plus an
 interactive Explorer that runs the real code and shows every byte.
 
 This is a tested learning implementation, not a production or certified stack. It
-does not replace `System.Net.Sockets`. See [docs/STANDARDS.md](docs/STANDARDS.md)
+does not replace `System.Net.Sockets`. See [docs/standards.md](docs/standards.md)
 for what is and isn't implemented at each layer.
 
 ## The layers
@@ -66,6 +66,7 @@ npm --prefix src/TCP.Explorer/ClientApp test
 
 ## Docs
 
-- [docs/STANDARDS.md](docs/STANDARDS.md): scope per layer, and MTU versus MSS
+- [docs/standards.md](docs/standards.md): scope per layer, and MTU versus MSS
+- [docs/network-stack-from-scratch.md](docs/network-stack-from-scratch.md): the original phase-by-phase build plan
 - [docs/arp-cache.md](docs/arp-cache.md): designing the ARP cache
-- [docs/TCP-WEB-SERVER-PLAN.md](docs/TCP-WEB-SERVER-PLAN.md): serving the Explorer through TCP.Core
+- [docs/tcp-web-server-plan.md](docs/tcp-web-server-plan.md): serving the Explorer through TCP.Core
