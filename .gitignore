@@ -6,6 +6,8 @@ riderModule.iml
 node_modules/
 # Built by src/TCP.Explorer/ClientApp (npm run build, or automatically by dotnet build)
 /src/TCP.Explorer/wwwroot/
+# Local publish output, such as the WebAssembly simulation (see src/TCP.Explorer/README.md)
+/artifacts/
 
 # Local tool settings
 .claude/

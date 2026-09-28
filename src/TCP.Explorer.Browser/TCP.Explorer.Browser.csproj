@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <!--
+    Runs the Explorer's transmission lab in the browser, for static hosting such as GitHub Pages.
+    It compiles the same TransmissionSimulation.cs the ASP.NET host serves at /api/simulate.
+    `dotnet publish -c Release` writes the runtime and assemblies to bin/Release/net10.0/publish/wwwroot/_framework/.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TCP.Explorer</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Static hosts such as GitHub Pages serve files as-is, so precompressed copies would go unused. -->
+    <CompressionEnabled>false</CompressionEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TCP.Core/TCP.Core.csproj" />
+    <Compile Include="../TCP.Explorer/TransmissionSimulation.cs" Link="TransmissionSimulation.cs" />
+  </ItemGroup>
+</Project>

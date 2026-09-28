@@ -49,6 +49,9 @@ jobs:
         working-directory: src/TCP.Explorer/ClientApp
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -56,9 +59,16 @@ jobs:
           cache-dependency-path: src/TCP.Explorer/ClientApp/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npm test
-      # Project Pages are served from /<repository>/. /api is not available there, so the transmit
-      # lab explains that it needs the ASP.NET host; the other sections are fully static.
+      # Project Pages are served from /<repository>/ and have no /api, so the transmit lab runs
+      # TransmissionSimulation.cs compiled to WebAssembly (src/TCP.Explorer.Browser) in the browser.
       - run: npm run build -- --base=/${{ github.event.repository.name }}/
+        env:
+          VITE_SIMULATOR: browser
+      - name: Add the WebAssembly simulation
+        working-directory: .
+        run: |
+          dotnet publish src/TCP.Explorer.Browser -c Release -o "$RUNNER_TEMP/browser-simulation"
+          cp -r "$RUNNER_TEMP/browser-simulation/wwwroot/_framework" src/TCP.Explorer/wwwroot/
       # Pages answers unknown paths with 404.html; serving the app shell there keeps deep links working.
       - run: cp ../wwwroot/index.html ../wwwroot/404.html
       - uses: actions/upload-pages-artifact@v4
