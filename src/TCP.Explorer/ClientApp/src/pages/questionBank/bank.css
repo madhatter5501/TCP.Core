@@ -1,0 +1,42 @@
+.bank-page { width: 100%; max-width: 1250px; margin: auto; }
+.bank-summary { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 18px; border: 1px solid var(--line); border-radius: 9px; margin-bottom: 12px; color: var(--body); }
+.bank-summary strong { color: var(--green); }
+.bank-sections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0; }
+.bank-sections button { display: grid; gap: 8px; text-align: left; padding: 18px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+.bank-sections button:hover { background: var(--raised); }
+.bank-sections button[aria-pressed=true] { border-color: var(--green); background: #16292a; }
+.bank-sections span { font-size: .75rem; color: var(--muted); }
+.bank-sections strong { font-size: .9375rem; }
+.bank-filters { padding: 18px; display: grid; grid-template-columns: 1fr 1fr .8fr 1.2fr; gap: 16px; }
+.bank-filters input[type=search] { width: 100%; min-width: 0; border: 1px solid #354354; border-radius: 6px; background: #0c131e; padding: 10px 11px; font-size: .875rem; }
+.bank-queue-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 18px 0; color: var(--body); font-size: .875rem; }
+.bank-queue-bar .small-muted { flex-basis: 100%; }
+.bank-question { padding: 28px; }
+.bank-question-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font: .75rem var(--mono); color: var(--blue); margin-bottom: 18px; }
+.bank-question-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 24px; }
+.bank-question-controls label { margin: 0; }
+.bank-question-controls select { width: auto; max-width: 100%; }
+.bank-question-controls button[aria-pressed=true] { color: var(--green); border-color: var(--green); background: #16292a; }
+.bank-question h2 { font-size: clamp(1.1rem, 2vw, 1.5rem); line-height: 1.45; scroll-margin-top: 90px; }
+.bank-evidence { padding: 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--blue); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+.bank-choices { border: 0; margin: 24px 0 0; padding: 0; min-width: 0; }
+.bank-choice-legend { font-size: .875rem; color: var(--muted); margin-bottom: 12px; }
+.bank-choices label { justify-content: flex-start; align-items: flex-start; gap: 12px; padding: 16px; background: var(--panel-deep); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.bank-choices label:has(input:checked) { border-color: var(--blue); background: #15263a; }
+.bank-choices input { accent-color: var(--green); flex-shrink: 0; margin-top: 4px; }
+.bank-letter { color: var(--muted); font-family: var(--mono); }
+.bank-check { margin-top: 16px; }
+.bank-page button:disabled { opacity: .5; cursor: default; }
+.bank-answer { padding: 22px; margin-top: 24px; border: 1px solid #344739; border-radius: 9px; background: #14231e; color: var(--body); }
+.bank-answer h3 { color: var(--green); margin-bottom: 14px; }
+.bank-answer.incorrect { background: #251d1a; border-color: #624335; }
+.bank-answer.incorrect h3 { color: var(--warn); }
+.bank-answer p:last-child { margin-bottom: 0; }
+.bank-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 22px; margin-top: 24px; }
+.bank-pagination span { color: var(--muted); font-size: .875rem; }
+.bank-notice { color: var(--green); padding: 12px 18px; border: 1px solid #344739; border-radius: 8px; }
+.bank-empty { padding: 28px; }
+.bank-empty p { margin-top: 14px; color: var(--muted); }
+@media (max-width: 1000px) { .bank-filters { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) { .bank-sections { grid-template-columns: 1fr 1fr; } .bank-question { padding: 18px; } .bank-question-controls select { flex: 1; min-width: 0; } }
+@media (max-width: 450px) { .bank-sections, .bank-filters { grid-template-columns: 1fr; } .bank-question-controls { align-items: flex-start; flex-direction: column; } .bank-question-controls select { width: 100%; flex: auto; } }

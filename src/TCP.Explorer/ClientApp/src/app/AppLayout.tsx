@@ -6,7 +6,8 @@ export const primaryNav = [
   { to: '/layers', label: 'Layers' },
   { to: '/transmit', label: 'Transmit' },
   { to: '/sizes', label: 'MTU & MSS' },
-  { to: '/concepts', label: 'Concepts' }
+  { to: '/concepts', label: 'Concepts' },
+  { to: '/practice', label: 'CCNA Practice' }
 ];
 
 export function AppLayout() {

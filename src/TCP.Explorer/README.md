@@ -62,11 +62,14 @@ Each section is its own page with a single intent. Every URL is linkable; the ho
 | `/layers/:layer/:view?` | Understand: encapsulation walkthrough; per-layer overview, header fields (`headers`), `gotchas` and source map (`code`) |
 | `/transmit?scenario=…` | Observe: run real TCP.Core code on two in-memory hosts; a frame ladder beside a field / hex / trace inspector |
 | `/sizes` | Experiment: MTU, MSS, options, VLAN tags and IPv4 fragmentation byte accounting |
+| `/practice?topic=…` | CCNA study: 12 guided lessons, 36 questions, worked reasoning, pitfalls, and external lab tasks with verification steps. Self-ratings, answers, and notes persist in browser local storage; the review filter follows those ratings. Evidence and IOS command samples are illustrative, not live device output. |
+| `/practice/bank?q=…` | 200 original CCNA v1.1 questions, weighted by domain (40/40/50/20/30/20), with topic codes, explanations, section/style/search filters, stable study queues, shuffle, review flags, and saved first-check results. |
 | `/concepts/:concept` | Learn: vocabulary articles (PDU names, datagrams) and an A–Z glossary (`/concepts/glossary#fcs`); add one in `pages/concepts/concepts.ts` |
 
 ## Source layout
 
 - `ClientApp/src/content/layers.ts` — layer teaching content and source-file map. Keep it in step with TCP.Core.
+- `ClientApp/src/content/questionBank/` — original CCNA questions, one file per exam section. Keep question order stable within each section because it determines saved question IDs. The bank tests check exact counts and coverage of all 53 main blueprint objectives.
 - `ClientApp/src/content/glossary.ts` — term definitions plus how TCP.Core handles each. Spellings listed in `matches` are linked automatically wherever `GlossaryText` renders prose, with the definition on hover or focus; use `<Term id="…">` in hand-written JSX.
 - `ClientApp/src/model/packetModel.ts` — pure byte accounting behind the size lab.
 - `ClientApp/src/pages/*` — one folder per section, with colocated styles.

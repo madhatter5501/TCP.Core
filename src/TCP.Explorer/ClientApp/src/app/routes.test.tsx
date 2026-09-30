@@ -5,7 +5,7 @@ import { renderRoute } from '../test/renderRoute';
 test('home offers each section by intent', () => {
   renderRoute('/');
   expect(screen.getByRole('heading', { level: 1, name: 'What’s inside a packet?' })).toBeInTheDocument();
-  for (const title of ['Walk the layers', 'Transmit real packets', 'Size things up', 'Keep the names straight']) {
+  for (const title of ['Walk the layers', 'Transmit real packets', 'Size things up', 'Keep the names straight', 'Find your CCNA gaps']) {
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
   }
 });
