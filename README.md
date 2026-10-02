@@ -5,6 +5,8 @@ actually work, from Ethernet frames through TLS. Each layer is plain, readable c
 with XML documentation that cites the RFC or IEEE standard it follows, plus an
 interactive Explorer that runs the real code and shows every byte.
 
+🌐 [Explore the TCP.Core website](https://madhatter5501.github.io/TCP.Core/)
+
 This is a tested learning implementation, not a production or certified stack. It
 does not replace `System.Net.Sockets`. See [docs/standards.md](docs/standards.md)
 for what is and isn't implemented at each layer.
