@@ -111,3 +111,7 @@ The existing bank and page suites passed: **2 files, 8 tests**. This supports th
 6. Keep the bank labeled v1.1 and schedule a content comparison before the February 2027 exam transition.
 
 Suggested public description: “200 independently authored study questions mapped to the six CCNA 200-301 v1.1 domains. Includes explanations and saved practice results. Supplements configuration labs and official study material; results are not a validated prediction of exam performance.” Use “independently authored” only if the project owner can substantiate that provenance.
+
+## Further coverage follow-up
+
+The remaining recognition-only gaps received eleven replacement questions, with new IDs, stronger primary references, and independent address-boundary/gateway checks. See the [updated coverage matrix](ccna-bank-coverage.md#remaining-gap-follow-up) for exactly what is now assessed and which execution-based checks remain open.

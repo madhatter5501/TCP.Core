@@ -143,3 +143,33 @@ test('v1.1 retirement is clearly reported once v2.0 begins', () => {
   expect(blueprintStatus(new Date('2027-02-02T12:00:00Z'))).toContain('last testing day');
   expect(blueprintStatus(new Date('2027-02-03T12:00:00Z'))).toContain('retired');
 });
+
+
+test('the private-range key contains exactly the RFC 1918 blocks and boundaries', () => {
+  const ranges = answer('fundamentals-private-ranges').split(', ').map(subnet);
+  expect(ranges.map(block => [dotted(block.network), dotted(block.broadcast)])).toEqual([
+    ['10.0.0.0', '10.255.255.255'],
+    ['172.16.0.0', '172.31.255.255'],
+    ['192.168.0.0', '192.168.255.255']
+  ]);
+  const q = question('fundamentals-private-ranges');
+  expect(q.choices.filter(choice => choice.split(', ').map(subnet).every((block, i) =>
+    block.network === ranges[i]!.network && block.broadcast === ranges[i]!.broadcast
+  ))).toEqual([q.choices[q.answer]]);
+});
+
+test('the Windows gateway diagnosis follows the authored address and mask', () => {
+  const q = question('fundamentals-windows-gateway');
+  const address = q.evidence.match(/IPv4 Address: ([\d.]+)/)![1]!;
+  const mask = q.evidence.match(/Subnet Mask: ([\d.]+)/)![1]!;
+  const gateway = q.evidence.match(/Default Gateway: ([\d.]+)/)![1]!;
+  const maskBits = ipv4(mask).toString(2);
+  expect(maskBits).toMatch(/^1+0+$/);
+  const prefix = maskBits.indexOf('0');
+  const hostBlock = subnet(`${address}/${prefix}`);
+  const gatewayBlock = subnet(`${gateway}/${prefix}`);
+  expect(hostBlock.network).not.toBe(gatewayBlock.network);
+  expect(hostBlock.address).toBeGreaterThan(hostBlock.network);
+  expect(hostBlock.address).toBeLessThan(hostBlock.broadcast);
+  expect(q.choices[q.answer]).toBe(`The /${prefix} mask places the gateway outside the host subnet`);
+});
