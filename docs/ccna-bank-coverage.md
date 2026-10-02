@@ -31,7 +31,7 @@ Question IDs are explicit identities, independent of their location in a file. E
 | 2.6 | access-027–030 | Controller architecture, local/FlexConnect/monitor modes; compare additional supported AP modes. |
 | 2.7 | access-031–033 | AP trunk, WLC aggregation compatibility, VLAN/DHCP path; verify physical and logical links. |
 | 2.8 | access-034–037 | CLI/web/console/cloud access; AAA protocol reading also in 5.8; configure platform-appropriate management. |
-| 2.9 | access-central-switching, access-039–040 | Read representative WLAN GUI fields, central switching, enabled state, and QoS meaning; navigate an actual supported WLC GUI. |
+| 2.9 | access-central-switching, access-wlan-path, access-040 | Read representative WLAN GUI fields, reconcile central switching with AP/controller trunk evidence, and interpret QoS meaning; navigate an actual supported WLC GUI. |
 | 3.1 | connectivity-001–008 | Route code, prefix, mask, next hop, distance, cost, default, local route; inspect a populated device table. |
 | 3.2 | connectivity-009–018 | Prefix selection, source preference, cost, ECMP, unresolved next hop; verify packet forwarding. |
 | 3.3 | connectivity-019–030 | IPv4/IPv6 default/network/host/backup routing and return paths; configure and fail over routes in a lab. |
@@ -44,7 +44,7 @@ Question IDs are explicit identities, independent of their location in a file. E
 | 4.5 | services-syslog-fields, services-010 | Decode Cisco facility/severity/mnemonic and evaluate logging thresholds; inspect full device messages and RFC PRI fields. |
 | 4.6 | services-011–012 | Relay interface selection and DHCP-client command; configure and verify client/relay exchanges. |
 | 4.7 | services-013–016 | Classification, marking, scheduling, shaping/policing, finite capacity; inspect PHB and congestion outcomes. |
-| 4.8 | services-017–018 | SSH ingredients and reachability diagnosis; configure complete server/authentication/VTY access and verify a new session. |
+| 4.8 | services-ssh-config, services-018 | Select a complete SSH change set from existing user/VTY/key configuration and diagnose reachability; configure complete server/authentication/VTY access and verify a new session. |
 | 4.9 | services-019–020 | TFTP/FTP capabilities and transfer failure; perform transfers and inspect control/data filtering. |
 | 5.1 | security-001–003 | Threat/vulnerability/exploit mapping, availability, mitigation; analyze varied incident scenarios. |
 | 5.2 | security-004–005 | Awareness/reporting and physical controls; broader security-program study remains necessary. |
@@ -57,7 +57,7 @@ Question IDs are explicit identities, independent of their location in a file. E
 | 5.9 | security-wpa-versions, security-027–028 | Direct WPA/TKIP, WPA2/CCMP, WPA3/SAE comparison and Enterprise identity; examine version/client constraints. |
 | 5.10 | security-wlan-auth, security-wlan-vlan | Representative GUI authentication and VLAN correction after successful authentication; configure and verify an actual WPA2 PSK WLAN. |
 | 6.1 | automation-001–002 | Repeatability and operational validation; run a reviewed automation workflow. |
-| 6.2 | automation-003–004 | Controller coordination and design-dependent failure behavior; compare architectures. |
+| 6.2 | automation-003, automation-controller-outage | Controller coordination and evidence-based retained-flow/table-miss behavior; compare architectures. |
 | 6.3 | automation-005–009 | Planes, API directions, overlay/underlay; inspect a fabric and its transport dependencies. |
 | 6.4 | automation-010–012 | Predictive/generative uses, ML alerts and false positives; evaluate data quality and operational context. |
 | 6.5 | automation-crud-contract, automation-014–016 | Complete read/create/replace/delete method mapping, contracted PATCH, bearer transport, and response interpretation; exercise a real API and additional authentication schemes. |
@@ -92,3 +92,15 @@ The remaining matrix items require broader study or execution on supported devic
 Tests verify unique prompts/IDs, independently specified domain counts and parent tags, available reference metadata, answer-position and option-length regression bounds, independent subnet/VLSM/IPv6/EUI-64/JSON calculations, revision semantics, legacy handling, UI feedback, and illustrative WLAN fields. The full frontend suite passes 72 tests, including 26 focused bank/persistence/page checks. The GitHub Pages production build passes. Structural and numeric tests do not establish originality, overall difficulty, or every device-specific explanation. Changes still need editorial review against primary references and relevant lab checks.
 
 [Cisco's transition announcement](https://blogs.cisco.com/learning/stay-on-track-get-certified-before-the-ccna-refresh) lists February 2, 2027 as the last v1.1 testing day and February 3, 2027 as the v2.0 launch. The bank displays these dates and switches to a retired-blueprint notice on February 3. Before claiming v2.0 alignment, compare its published topics, revise this matrix and references, update question content, and rerun checks. Do not simply change the label.
+
+## Editorial follow-up: October 2, 2026
+
+The subsequent quality review corrected the guided subnet lab to use 192.0.2.97/27, a usable host in the next subnet, instead of its .96 network address. The wireless checkpoint and lab now explicitly use FlexConnect local switching with a local DHCP path. Its alternatives compare AP management, AP client transport, and controller transport mistakes.
+
+Guided questions now order displayed choices using a stable question-ID/choice-text fingerprint. Authored indexes remain the saved answer identity, so existing selections and grading survive this display-only permutation. Source choice arrays must still not be reordered without migrating their stored indexes. Tests cover the old stored indexes, stable display ordering, answer identity, and absence of the three-lesson answer-position pattern.
+
+The bank replaces services-017, access-039, and automation-004 with services-ssh-config, access-wlan-path, and automation-controller-outage. These new identities prevent old results or flags from attaching to materially different assessments. The new questions require selecting the full missing SSH change set, reconciling WLAN settings with controller/AP trunk evidence, and applying an explicit controller-outage policy. Domain counts remain unchanged. Security-awareness distractors now compare plausible controls, and discovery/fundamentals explanations address their actual alternatives.
+
+Validation: all 76 frontend tests pass. This is targeted improvement of the reviewed weaknesses, not calibrated evidence of exam readiness or exhaustive practical coverage. Device configurations and the external labs still require execution on supported platforms.
+
+Primary references for this follow-up: [Cisco IPv4 addressing](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-addressing/b-ip-addressing/m_config-ipv4-addr-0.html), [FlexConnect switching modes](https://www.cisco.com/c/en/us/td/docs/wireless/controller/8-10/config-guide/b_cg810/flexconnect.html), and [SSH configuration](https://www.cisco.com/c/en/us/td/docs/switches/lan/c9000/sec-crypto/ssh/secure-shell-configuration-guide/m-secure-shell.html).

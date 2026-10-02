@@ -5,6 +5,22 @@ import { progressKey } from './practiceProgress';
 
 beforeEach(() => localStorage.clear());
 
+test('existing authored-index answers still select and grade the same choice after display reordering', () => {
+  localStorage.setItem(progressKey, JSON.stringify({
+    subnet: { notes: 'Saved before display reordering', attempts: {
+      foundation: { selected: 1, checked: true },
+      'checkpoint-0': { selected: 0, checked: true },
+      'checkpoint-1': { selected: 2, checked: true }
+    } }
+  }));
+  renderRoute('/practice?topic=subnet');
+  expect(screen.getByText('3 / 36 questions correct')).toBeInTheDocument();
+  expect(screen.getByRole('radio', { name: 'Network .64; broadcast .95; hosts .65–.94' })).toBeChecked();
+  expect(screen.getByRole('radio', { name: 'Network .128, broadcast .143, hosts .129–.142' })).toBeChecked();
+  expect(screen.getByRole('radio', { name: '.0/26, .64/27, .96/28' })).toBeChecked();
+  expect(screen.getByLabelText('Your reasoning and questions to revisit')).toHaveValue('Saved before display reordering');
+});
+
 const chooseSubnet = async () => {
   await userEvent.click(screen.getByRole('radio', { name: 'Network .64; broadcast .95; hosts .65–.94' }));
   await userEvent.click(screen.getByRole('button', { name: 'Check answer 1' }));

@@ -6,6 +6,7 @@ import { PageHeading } from '../../components/PageHeading';
 import { useDocumentTitle } from '../../components/useDocumentTitle';
 import { emptyTopic, loadProgress, progressKey, type Attempt, type Confidence, type TopicProgress } from './practiceProgress';
 import './practice.css';
+import { orderedChoices } from './choiceOrder';
 
 function Question({ id, number, question, attempt, onChange, children }: {
   id: string; number: number; question: Checkpoint; attempt?: Attempt;
@@ -18,7 +19,7 @@ function Question({ id, number, question, attempt, onChange, children }: {
       <pre className="practice-evidence"><code>{question.evidence}</code></pre>
       <fieldset className="practice-choices">
         <legend>{question.question}</legend>
-        {question.choices.map((choice, index) => (
+        {orderedChoices(id, question.choices).map(({ choice, index }) => (
           <label key={choice}>
             <input type="radio" name={id} checked={attempt?.selected === index} onChange={() => onChange({ selected: index, checked: false })} />
             {choice}
