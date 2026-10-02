@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderRoute } from '../../test/renderRoute';
 import { questionBank } from '../../content/questionBank';
-import { bankProgressKey } from './bankProgress';
+import { bankProgressKey, legacyBankProgressKey } from './bankProgress';
 
 beforeEach(() => localStorage.clear());
 
@@ -88,7 +88,7 @@ test('incorrect answers are reviewable and shuffle preserves the filtered questi
 });
 
 test('invalid saved selections cannot break the bank and failed storage is reported', async () => {
-  localStorage.setItem(bankProgressKey, JSON.stringify({ 'fundamentals-001': { selected: 99, checked: true, review: true } }));
+  localStorage.setItem(bankProgressKey, JSON.stringify({ 'fundamentals-001': { revision: questionBank[0]!.revision, selected: 'unknown choice', checked: true, review: true } }));
   const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('unavailable'); });
   try {
     await openBank();
@@ -96,4 +96,44 @@ test('invalid saved selections cannot break the bank and failed storage is repor
     expect(screen.getByText(/Browser storage is unavailable/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Saved for review ✓' })).toHaveAttribute('aria-pressed', 'true');
   } finally { setItem.mockRestore(); }
+});
+
+test('the bank states assessment limits and shows topic references after checking', async () => {
+  await openBank();
+  expect(screen.getByText(/not a validated prediction of exam performance/)).toBeInTheDocument();
+  expect(screen.getByText(/not complete blueprint coverage/)).toBeInTheDocument();
+  expect(screen.getByText(/v2.0 begins February 3, 2027/)).toBeInTheDocument();
+  const q = questionBank[0]!;
+  await userEvent.click(screen.getByRole('radio', { name: q.choices[q.answer]! }));
+  await userEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+  expect(screen.getByRole('link', { name: /Cisco campus LAN and WLAN design/ })).toHaveAttribute('href', 'https://www.cisco.com/c/en/us/td/docs/solutions/CVD/Campus/cisco-campus-lan-wlan-design-guide.html');
+});
+
+test('legacy responses are retired with an explanation and their review flags survive', async () => {
+  localStorage.setItem(legacyBankProgressKey, JSON.stringify({ 'fundamentals-001': { selected: 0, checked: true, review: true, firstCorrect: true } }));
+  await openBank();
+  expect(screen.getByText(/Earlier answers were not carried over/)).toBeInTheDocument();
+  expect(screen.getByText('0 / 200 answered')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Saved for review ✓' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.queryByRole('status', { name: 'Answer feedback' })).not.toBeInTheDocument();
+});
+
+test('a revised question explains its retired result and requires a new first check', async () => {
+  localStorage.setItem(bankProgressKey, JSON.stringify({ 'fundamentals-001': { revision: 'old-revision', selected: questionBank[0]!.choiceIds[questionBank[0]!.answer], checked: true, review: true, firstCorrect: true } }));
+  await openBank();
+  expect(screen.getByText(/Updated questions need a new answer/)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Check answer' })).toBeDisabled();
+  expect(screen.getByText('0 / 200 answered')).toBeInTheDocument();
+});
+
+test('WLAN GUI questions display illustrative fields and keep reasoning behind check', async () => {
+  await openBank('/practice/bank?q=security-wlan-auth');
+  const panel = screen.getByRole('region', { name: 'Illustrative WLAN configuration' });
+  expect(panel).toHaveTextContent('Authentication key management');
+  expect(panel).toHaveTextContent('802.1X');
+  expect(screen.queryByRole('status', { name: 'Answer feedback' })).not.toBeInTheDocument();
+  const q = questionBank.find(q => q.id === 'security-wlan-auth')!;
+  await userEvent.click(screen.getByRole('radio', { name: q.choices[q.answer]! }));
+  await userEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+  expect(screen.getByRole('status', { name: 'Answer feedback' })).toHaveTextContent('Correct');
 });

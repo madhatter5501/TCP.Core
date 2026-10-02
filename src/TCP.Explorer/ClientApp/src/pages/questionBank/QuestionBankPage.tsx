@@ -2,14 +2,26 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { questionBank, examSections } from '../../content/questionBank';
 import type { BankQuestion } from '../../content/questionBank/types';
+import { bankReviewDate, blueprintStatus, blueprintUrl, examTransitionUrl, topicReferences } from '../../content/questionBank/references';
 import { PageHeading } from '../../components/PageHeading';
 import { useDocumentTitle } from '../../components/useDocumentTitle';
-import { bankProgressKey, emptyAttempt, loadBankProgress, type BankProgress } from './bankProgress';
+import { bankProgressKey, emptyAttempt, loadBankProgress, getBankProgressNotice, type BankProgress } from './bankProgress';
 import './bank.css';
 
 type Status = 'all' | 'unanswered' | 'incorrect' | 'review';
 interface Filters { section: string; status: Status; difficulty: string; search: string }
 const defaultFilters: Filters = { section: 'all', status: 'all', difficulty: 'all', search: '' };
+
+function QuestionEvidence({ evidence }: { evidence: string }) {
+  if (!evidence.startsWith('Illustrative WLAN GUI\n')) return <pre className="bank-evidence"><code>{evidence}</code></pre>;
+  return <section className="bank-gui" aria-label="Illustrative WLAN configuration">
+    <h3>Illustrative WLAN configuration</h3>
+    <dl>{evidence.split('\n').slice(1).map((line, i) => {
+      const colon = line.indexOf(':');
+      return <div key={i}><dt>{colon < 0 ? 'Context' : line.slice(0, colon)}</dt><dd>{colon < 0 ? line : line.slice(colon + 1).trim()}</dd></div>;
+    })}</dl>
+  </section>;
+}
 
 function matches(question: BankQuestion, filters: Filters, progress: BankProgress) {
   const attempt = progress[question.id];
@@ -17,7 +29,7 @@ function matches(question: BankQuestion, filters: Filters, progress: BankProgres
     && (filters.difficulty === 'all' || question.difficulty === filters.difficulty)
     && (filters.status === 'all'
       || (filters.status === 'unanswered' && attempt?.firstCorrect === undefined)
-      || (filters.status === 'incorrect' && attempt?.checked && attempt.selected !== question.answer)
+      || (filters.status === 'incorrect' && attempt?.checked && attempt.selected !== question.choiceIds[question.answer])
       || (filters.status === 'review' && attempt?.review))
     && `${question.prompt} ${question.evidence} ${question.objective}`.toLowerCase().includes(filters.search.trim().toLowerCase());
 }
@@ -26,8 +38,9 @@ export function QuestionBankPage() {
   useDocumentTitle('200-question CCNA Bank');
   const [params, setParams] = useSearchParams();
   const focusRequested = useRef(params.has('q'));
-  const [progress, setProgress] = useState(loadBankProgress);
+  const [progress, setProgress] = useState(() => loadBankProgress());
   const [storageAvailable, setStorageAvailable] = useState(true);
+  const [progressNotice] = useState(getBankProgressNotice);
   const [filters, setFilters] = useState(defaultFilters);
   // Capture a study queue when filters change, so an answer does not disappear before its explanation is read.
   const [queue, setQueue] = useState(() => questionBank.map(q => q.id));
@@ -40,13 +53,13 @@ export function QuestionBankPage() {
   const currentId = requested && queue.includes(requested) ? requested : queue[0];
   const question = questionBank.find(q => q.id === currentId);
   const index = queue.indexOf(currentId ?? '');
-  const attempt = question ? progress[question.id] ?? emptyAttempt() : emptyAttempt();
+  const attempt = question ? progress[question.id] ?? emptyAttempt(question) : emptyAttempt();
   const section = examSections.find(section => section.id === question?.section);
   const answered = Object.values(progress).filter(a => a.firstCorrect !== undefined).length;
   const firstCorrect = Object.values(progress).filter(a => a.firstCorrect === true).length;
-  const currentCorrect = questionBank.filter(q => progress[q.id]?.checked && progress[q.id]?.selected === q.answer).length;
+  const currentCorrect = questionBank.filter(q => progress[q.id]?.checked && progress[q.id]?.selected === q.choiceIds[q.answer]).length;
   const reviewCount = Object.values(progress).filter(a => a.review).length;
-  const incorrectCount = questionBank.filter(q => progress[q.id]?.checked && progress[q.id]?.selected !== q.answer).length;
+  const incorrectCount = questionBank.filter(q => progress[q.id]?.checked && progress[q.id]?.selected !== q.choiceIds[q.answer]).length;
   const nextUnanswered = queue.slice(index + 1).concat(queue.slice(0, index)).find(id => progress[id]?.firstCorrect === undefined);
 
   const changeFilters = (next: Filters) => {
@@ -84,15 +97,18 @@ export function QuestionBankPage() {
   return (
     <div className="bank-page">
       <PageHeading eyebrow="CCNA 200-301 v1.1" title="200-question bank" next={{ to: '/practice', label: 'Guided lessons' }}>
-        <p>Original study questions covering all six exam sections. Calculate, interpret device output, and troubleshoot before reading the explanation.</p>
+        <p>Study questions mapped to all six exam domains. Calculate, interpret illustrative configurations, and troubleshoot before reading the explanation.</p>
       </PageHeading>
+      {progressNotice && <p className="bank-notice" role="status">{progressNotice}</p>}
       <div className="bank-summary" aria-live="polite">
         <strong>{answered} / 200 answered</strong>
         <span>{firstCorrect} / {answered} correct on first check</span>
         <span>{currentCorrect} currently correct</span>
         <span>{incorrectCount} incorrect · {reviewCount} saved for review</span>
       </div>
-      <p className="small-muted">{storageAvailable ? 'Answers and review flags are saved in this browser. First-check results stay recorded when you retry.' : 'Browser storage is unavailable. Progress lasts only while this page stays open.'} These are original practice questions, not actual exam items. <a className="inline-link" href="https://learningcontent.cisco.com/documents/marketing/exam-topics/200-301-CCNA-v1.1.pdf">View Cisco’s topic checklist ↗</a></p>
+      <p className="small-muted">{storageAvailable ? 'Answers and review flags are saved in this browser. First-check results stay recorded when you retry.' : 'Browser storage is unavailable. Progress lasts only while this page stays open.'} Revised questions require a new answer. These practice questions are not actual exam items or Cisco-endorsed material. Results are not a validated prediction of exam performance.</p>
+      <p className="small-muted">Examples and configuration panels are illustrative, not live device output. Parent topic tags show study samples, not complete blueprint coverage or demonstrated lab skills. Supplement this bank with configuration labs. Content review: <time dateTime={bankReviewDate}>October 2, 2026</time>. <a className="inline-link" href={blueprintUrl}>View Cisco’s topic checklist ↗</a></p>
+      <p className="small-muted">{blueprintStatus()} <a className="inline-link" href={examTransitionUrl}>Cisco’s exam transition dates ↗</a></p>
       <div className="bank-sections" role="group" aria-label="Exam sections">
         {examSections.map(item => {
           const questions = questionBank.filter(q => q.section === item.id);
@@ -138,18 +154,19 @@ export function QuestionBankPage() {
             }}>{attempt.review ? 'Saved for review ✓' : 'Save for review'}</button>
           </div>
           <h2 id="bank-question-title" tabIndex={-1}>{question.prompt}</h2>
-          {question.evidence && <pre className="bank-evidence"><code>{question.evidence}</code></pre>}
+          {question.evidence && <QuestionEvidence evidence={question.evidence} />}
           <fieldset className="bank-choices"><legend className="bank-choice-legend">Choose the best answer</legend>
             {question.choices.map((choice, i) => <label key={choice}>
-              <input type="radio" name={question.id} checked={attempt.selected === i} onChange={() => { updateAttempt({ ...attempt, selected: i, checked: false }); setNotice(''); }} />
+              <input type="radio" name={question.id} checked={attempt.selected === question.choiceIds[i]} onChange={() => { updateAttempt({ ...attempt, selected: question.choiceIds[i], checked: false }); setNotice(''); }} />
               <span className="bank-letter" aria-hidden="true">{String.fromCharCode(65 + i)}</span><span>{choice}</span>
             </label>)}
           </fieldset>
-          <button className="outline-button bank-check" disabled={attempt.selected === undefined} onClick={() => updateAttempt({ ...attempt, checked: true, firstCorrect: attempt.firstCorrect ?? (attempt.selected === question.answer) })}>Check answer</button>
-          {attempt.checked && <div className={`bank-answer ${attempt.selected === question.answer ? 'correct' : 'incorrect'}`} role="status" aria-label="Answer feedback">
-            <h3>{attempt.selected === question.answer ? 'Correct' : 'Not quite — review the reasoning'}</h3>
+          <button className="outline-button bank-check" disabled={attempt.selected === undefined} onClick={() => updateAttempt({ ...attempt, checked: true, firstCorrect: attempt.firstCorrect ?? (attempt.selected === question.choiceIds[question.answer]) })}>Check answer</button>
+          {attempt.checked && <div className={`bank-answer ${attempt.selected === question.choiceIds[question.answer] ? 'correct' : 'incorrect'}`} role="status" aria-label="Answer feedback">
+            <h3>{attempt.selected === question.choiceIds[question.answer] ? 'Correct' : 'Not quite — review the reasoning'}</h3>
             <p><strong>Best answer:</strong> {question.choices[question.answer]}</p>
             <p>{question.explanation}</p>
+            <p className="small-muted">Topic references: {topicReferences(question.objective).map((reference, i) => <span key={reference.url}>{i > 0 && ' · '}<a className="inline-link" href={reference.url}>{reference.title} ↗</a></span>)}</p>
             <p className="small-muted">Explain why the other choices do not fit before moving on. Changing your choice lets you retry; your first-check result is retained.</p>
           </div>}
           <div className="bank-pagination">

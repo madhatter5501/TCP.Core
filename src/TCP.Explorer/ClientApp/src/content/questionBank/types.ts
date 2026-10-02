@@ -1,5 +1,6 @@
 export type Difficulty = 'Understand' | 'Apply' | 'Troubleshoot';
 export interface QuestionSpec {
+  id: string;
   objective: string;
   prompt: string;
   correct: string;
@@ -10,18 +11,20 @@ export interface QuestionSpec {
 }
 export interface BankQuestion {
   id: string;
+  revision: string;
   section: string;
   objective: string;
   prompt: string;
   choices: string[];
+  choiceIds: string[];
   answer: number;
   explanation: string;
   evidence: string;
   difficulty: Difficulty;
 }
-/** Author original questions with a correct answer; assembly varies its displayed position. */
-export function q(objective: string, prompt: string, correct: string, distractors: [string, string, string], explanation: string, evidence = '', difficulty: Difficulty = 'Apply'): QuestionSpec {
-  return { objective, prompt, correct, distractors, explanation, evidence, difficulty };
+/** Author questions with explicit identities and a correct answer; assembly varies its displayed position. */
+export function q(id: string, objective: string, prompt: string, correct: string, distractors: [string, string, string], explanation: string, evidence = '', difficulty: Difficulty = evidence ? 'Apply' : 'Understand'): QuestionSpec {
+  return { id, objective, prompt, correct, distractors, explanation, evidence, difficulty };
 }
 export const examSections = [
   { id: 'fundamentals', title: 'Network fundamentals', weight: 20, count: 40, prefix: '1', objectives: 13 },
