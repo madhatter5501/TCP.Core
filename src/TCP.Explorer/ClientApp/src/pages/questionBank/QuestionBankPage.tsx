@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { questionBank, examSections } from '../../content/questionBank';
 import type { BankQuestion } from '../../content/questionBank/types';
 import { bankReviewDate, blueprintStatus, blueprintUrl, examTransitionUrl, topicReferences } from '../../content/questionBank/references';
-import { PageHeading } from '../../components/PageHeading';
 import { useDocumentTitle } from '../../components/useDocumentTitle';
 import { bankProgressKey, emptyAttempt, loadBankProgress, getBankProgressNotice, type BankProgress } from './bankProgress';
 import './bank.css';
@@ -42,6 +41,8 @@ export function QuestionBankPage() {
   const [storageAvailable, setStorageAvailable] = useState(true);
   const [progressNotice] = useState(getBankProgressNotice);
   const [filters, setFilters] = useState(defaultFilters);
+  const [examMode, setExamMode] = useState(true);
+  const [setupOpen, setSetupOpen] = useState(false);
   // Capture a study queue when filters change, so an answer does not disappear before its explanation is read.
   const [queue, setQueue] = useState(() => questionBank.map(q => q.id));
   const [notice, setNotice] = useState('');
@@ -77,7 +78,7 @@ export function QuestionBankPage() {
   useEffect(() => {
     if (focusRequested.current) {
       document.getElementById('bank-question-title')?.focus({ preventScroll: true });
-      document.getElementById('bank-question-title')?.scrollIntoView({ block: 'start' });
+      document.getElementById('bank-question-title')?.closest('article')?.scrollIntoView({ block: 'start' });
       focusRequested.current = false;
     }
   }, [currentId]);
@@ -95,10 +96,14 @@ export function QuestionBankPage() {
   };
 
   return (
-    <div className="bank-page">
-      <PageHeading eyebrow="CCNA 200-301 v1.1" title="200-question bank" next={{ to: '/practice', label: 'Guided lessons' }}>
-        <p>Study questions mapped to all six exam domains. Calculate, interpret illustrative configurations, and troubleshoot before reading the explanation.</p>
-      </PageHeading>
+    <div className={`bank-page${examMode ? ' bank-exam-mode' : ''}`}>
+      <div className="bank-exam-heading">
+        <div><p className="eyebrow">CCNA 200-301 v1.1 · Practice</p><h1>200-question bank</h1></div>
+        <div className="bank-mode-controls">
+          <button className="outline-button" aria-pressed={examMode} onClick={() => { setExamMode(!examMode); setSetupOpen(false); }}>{examMode ? 'Exit exam mode' : 'Enter exam mode'}</button>
+          {examMode && <button className="outline-button" aria-expanded={setupOpen} aria-controls="bank-setup" onClick={() => setSetupOpen(!setupOpen)}>{setupOpen ? 'Close setup' : 'Exam setup'}</button>}
+        </div>
+      </div>
       {progressNotice && <p className="bank-notice" role="status">{progressNotice}</p>}
       <div className="bank-summary" aria-live="polite">
         <strong>{answered} / 200 answered</strong>
@@ -106,7 +111,10 @@ export function QuestionBankPage() {
         <span>{currentCorrect} currently correct</span>
         <span>{incorrectCount} incorrect · {reviewCount} saved for review</span>
       </div>
-      <p className="small-muted">{storageAvailable ? 'Answers and review flags are saved in this browser. First-check results stay recorded when you retry.' : 'Browser storage is unavailable. Progress lasts only while this page stays open.'} Revised questions require a new answer. These practice questions are not actual exam items or Cisco-endorsed material. Results are not a validated prediction of exam performance.</p>
+      {!storageAvailable && examMode && !setupOpen && <p className="bank-notice" role="status">Browser storage is unavailable. Progress lasts only while this page stays open.</p>}
+      <section id="bank-setup" aria-label="Exam setup" hidden={examMode && !setupOpen}>
+      <div className="bank-setup-intro"><p>Study questions mapped to all six exam domains. Calculate, interpret illustrative configurations, and troubleshoot before reading the explanation.</p><Link className="inline-link" to="/practice">Guided lessons →</Link></div>
+      <p className="small-muted">{storageAvailable ? 'Answers and review flags are saved in this browser. First-check results stay recorded when you retry.' : (!examMode || setupOpen) ? 'Browser storage is unavailable. Progress lasts only while this page stays open.' : ''} Revised questions require a new answer. These practice questions are not actual exam items or Cisco-endorsed material. Results are not a validated prediction of exam performance.</p>
       <p className="small-muted">Examples and configuration panels are illustrative, not live device output. Parent topic tags show study samples, not complete blueprint coverage or demonstrated lab skills. Supplement this bank with configuration labs. Content review: <time dateTime={bankReviewDate}>October 2, 2026</time>. <a className="inline-link" href={blueprintUrl}>View Cisco’s topic checklist ↗</a></p>
       <p className="small-muted">{blueprintStatus()} <a className="inline-link" href={examTransitionUrl}>Cisco’s exam transition dates ↗</a></p>
       <div className="bank-sections" role="group" aria-label="Exam sections">
@@ -139,6 +147,7 @@ export function QuestionBankPage() {
         <button className="quiet-button" onClick={() => changeFilters(filters)}>Refresh queue</button>
         <span className="small-muted">Answers stay visible until you move on. Refresh the queue to update filter matches.</span>
       </div>
+      </section>
       {notice && <p className="bank-notice" role="status" aria-label="Queue feedback">{notice}</p>}
       {question ? (
         <article className="panel bank-question" aria-labelledby="bank-question-title">
@@ -146,7 +155,7 @@ export function QuestionBankPage() {
           <div className="bank-question-controls">
             <label htmlFor="bank-jump">Question in queue</label>
             <select id="bank-jump" value={question.id} onChange={e => selectQuestion(e.target.value)}>
-              {queue.map((id, i) => <option key={id} value={id}>{i + 1} / {queue.length} · {id}{progress[id]?.review ? ' · Review' : ''}</option>)}
+              {queue.map((id, i) => <option key={id} value={id}>{i + 1} / {queue.length}{!examMode && ` · ${id}`}{progress[id]?.review ? ' · Review' : ''}</option>)}
             </select>
             <button className="outline-button" aria-pressed={attempt.review} onClick={() => {
               updateAttempt({ ...attempt, review: !attempt.review });
@@ -161,7 +170,6 @@ export function QuestionBankPage() {
               <span className="bank-letter" aria-hidden="true">{String.fromCharCode(65 + i)}</span><span>{choice}</span>
             </label>)}
           </fieldset>
-          <button className="outline-button bank-check" disabled={attempt.selected === undefined} onClick={() => updateAttempt({ ...attempt, checked: true, firstCorrect: attempt.firstCorrect ?? (attempt.selected === question.choiceIds[question.answer]) })}>Check answer</button>
           {attempt.checked && <div className={`bank-answer ${attempt.selected === question.choiceIds[question.answer] ? 'correct' : 'incorrect'}`} role="status" aria-label="Answer feedback">
             <h3>{attempt.selected === question.choiceIds[question.answer] ? 'Correct' : 'Not quite — review the reasoning'}</h3>
             <p><strong>Best answer:</strong> {question.choices[question.answer]}</p>
@@ -169,11 +177,14 @@ export function QuestionBankPage() {
             <p className="small-muted">Topic references: {topicReferences(question.objective).map((reference, i) => <span key={reference.url}>{i > 0 && ' · '}<a className="inline-link" href={reference.url}>{reference.title} ↗</a></span>)}</p>
             <p className="small-muted">Explain why the other choices do not fit before moving on. Changing your choice lets you retry; your first-check result is retained.</p>
           </div>}
+          <div className="bank-action-bar">
+          <button className="outline-button bank-check" disabled={attempt.selected === undefined} onClick={() => updateAttempt({ ...attempt, checked: true, firstCorrect: attempt.firstCorrect ?? (attempt.selected === question.choiceIds[question.answer]) })}>Check answer</button>
           <div className="bank-pagination">
             <button className="outline-button" disabled={index <= 0} onClick={() => selectQuestion(queue[index - 1])}>← Previous</button>
             <span>{index + 1} / {queue.length}</span>
             <button className="outline-button" disabled={index >= queue.length - 1} onClick={() => selectQuestion(queue[index + 1])}>Next →</button>
             <button className="quiet-button" disabled={!nextUnanswered} onClick={() => selectQuestion(nextUnanswered)}>Next unanswered</button>
+          </div>
           </div>
         </article>
       ) : <div className="panel bank-empty"><h2>No questions match these filters</h2><p>Try another section or clear the filters to return to the full bank.</p><button className="outline-button" onClick={() => changeFilters(defaultFilters)}>Show all 200 questions</button></div>}

@@ -6,9 +6,10 @@ import { bankProgressKey, legacyBankProgressKey } from './bankProgress';
 
 beforeEach(() => localStorage.clear());
 
-async function openBank(path = '/practice/bank') {
+async function openBank(path = '/practice/bank', setup = true) {
   const result = renderRoute(path);
   await screen.findByRole('heading', { name: '200-question bank' });
+  if (setup) await userEvent.click(screen.getByRole('button', { name: 'Exam setup' }));
   return result;
 }
 
@@ -136,4 +137,23 @@ test('WLAN GUI questions display illustrative fields and keep reasoning behind c
   await userEvent.click(screen.getByRole('radio', { name: q.choices[q.answer]! }));
   await userEvent.click(screen.getByRole('button', { name: 'Check answer' }));
   expect(screen.getByRole('status', { name: 'Answer feedback' })).toHaveTextContent('Correct');
+});
+
+
+test('exam mode starts with setup collapsed and keeps answers when switching layouts', async () => {
+  await openBank('/practice/bank', false);
+  expect(screen.getByRole('button', { name: 'Exam setup' })).toHaveAttribute('aria-expanded', 'false');
+  expect(screen.queryByRole('region', { name: 'Exam setup' })).not.toBeInTheDocument();
+  const q = questionBank[0]!;
+  await userEvent.click(screen.getByRole('radio', { name: q.choices[q.answer]! }));
+  await userEvent.click(screen.getByRole('button', { name: 'Check answer' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Exam setup' }));
+  expect(screen.getByRole('region', { name: 'Exam setup' })).toBeVisible();
+  await userEvent.click(screen.getByRole('button', { name: 'Close setup' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Exit exam mode' }));
+  expect(screen.getByRole('region', { name: 'Exam setup' })).toBeVisible();
+  expect(screen.getByRole('status', { name: 'Answer feedback' })).toHaveTextContent('Correct');
+  await userEvent.click(screen.getByRole('button', { name: 'Enter exam mode' }));
+  expect(screen.queryByRole('region', { name: 'Exam setup' })).not.toBeInTheDocument();
+  expect(screen.getByRole('radio', { name: q.choices[q.answer]! })).toBeChecked();
 });
