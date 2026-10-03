@@ -1,0 +1,18 @@
+.scenario-picker { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 20px 0; }
+.scenario-picker select { max-width: 100%; }
+.scenario-topology { margin: 24px 0; padding: 16px; background: var(--panel-deep); border: 1px solid var(--line); border-radius: 10px; }
+.scenario-topology svg { width: 100%; height: auto; display: block; }
+.scenario-topology rect { fill: var(--bg); stroke: var(--blue); stroke-width: 2; }
+.scenario-topology line { stroke: var(--green); stroke-width: 3; }
+.scenario-topology text { fill: var(--muted); font-size: 13px; }
+.scenario-topology .scenario-node { fill: var(--text); font-size: 16px; font-weight: 600; }
+.scenario-topology figcaption { color: var(--muted); font-size: .875rem; line-height: 1.7; }
+.scenario-stages { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+.scenario-stages button[aria-pressed=true] { border-color: var(--green); color: var(--green); }
+.practice-lab summary { cursor: pointer; font-weight: 600; margin-bottom: 16px; }
+@media (max-width: 560px) { .scenario-topology { overflow-x: auto; } .scenario-topology svg { min-width: 620px; } }
+
+.scenario-captures { margin: 24px 0; }
+.scenario-captures summary { cursor: pointer; font-weight: 600; }
+.scenario-captures figure { margin: 20px 0; }
+.scenario-captures img { display: block; max-width: 100%; height: auto; max-height: 560px; border-radius: 8px; }

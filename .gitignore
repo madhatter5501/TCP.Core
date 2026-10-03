@@ -12,9 +12,3 @@ node_modules/
 # Local tool settings
 .claude/
 .idea/
-
-# Packet Tracer assets stay outside the public study site.
-/src/TCP.Explorer/ClientApp/public/labs/ccna/
-*.pkt
-*.pka
-*.pkz

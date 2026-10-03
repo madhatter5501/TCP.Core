@@ -8,6 +8,7 @@ import { TransmitPage } from '../pages/transmit/TransmitPage';
 import { SizesPage } from '../pages/sizes/SizesPage';
 import { ConceptsLayout } from '../pages/concepts/ConceptsLayout';
 import { concepts } from '../pages/concepts/concepts';
+import { PracticePage } from '../pages/practice/PracticePage';
 
 /**
  * One route per intent. Paths are part of the teaching surface: a layer, detail view,
@@ -27,6 +28,9 @@ export const routes: RouteObject[] = [
           { path: 'layers/:layer/:view?', element: <LayersPage /> },
           { path: 'transmit', element: <TransmitPage /> },
           { path: 'sizes', element: <SizesPage /> },
+          { path: 'practice', element: <PracticePage /> },
+          { path: 'practice/scenarios', lazy: async () => ({ Component: (await import('../pages/scenarios/ScenariosPage')).ScenariosPage }) },
+          { path: 'practice/bank', lazy: async () => ({ Component: (await import('../pages/questionBank/QuestionBankPage')).QuestionBankPage }) },
           {
             path: 'concepts',
             element: <ConceptsLayout />,

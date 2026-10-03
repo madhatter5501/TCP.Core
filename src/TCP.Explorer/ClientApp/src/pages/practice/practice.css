@@ -1,0 +1,50 @@
+.practice-page { max-width: 1250px; width: 100%; margin: 0 auto; }
+.practice-intro { color: var(--muted); font-size: .875rem; margin-bottom: 20px; }
+.practice-intro p { margin-bottom: 6px; max-width: 900px; }
+.practice-progress { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 9px; }
+.practice-progress strong { color: var(--green); }
+.practice-progress span { color: var(--muted); }
+.practice-progress .small-muted { flex-basis: 100%; }
+.practice-grid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+.practice-list { padding: 18px; }
+.practice-list .check-label { margin: 0 0 18px; align-items: flex-start; }
+.practice-topic-buttons { display: grid; gap: 8px; }
+.practice-topic-select { display: none; }
+.practice-topic-buttons button { text-align: left; background: var(--panel-deep); border: 1px solid var(--line); border-radius: 7px; padding: 12px; display: grid; gap: 4px; }
+.practice-topic-buttons button:hover { background: var(--raised); }
+.practice-topic-buttons button[aria-pressed=true] { border-color: var(--green); background: #16292a; }
+.practice-topic-buttons span { color: var(--muted); font-size: .75rem; }
+.practice-topic-buttons .practice-rating { color: var(--amber); }
+.practice-exercise { padding: 28px; min-width: 0; }
+.practice-exercise h2 { margin-bottom: 8px; }
+.practice-evidence { white-space: pre-wrap; overflow-wrap: anywhere; padding: 18px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--blue); line-height: 1.8; }
+.practice-choices { border: 0; padding: 0; margin: 24px 0 0; min-width: 0; }
+.practice-choices legend { font-weight: 600; margin-bottom: 16px; }
+.practice-choices label { display: flex; justify-content: flex-start; align-items: flex-start; gap: 12px; background: var(--panel-deep); border: 1px solid var(--line); padding: 14px; border-radius: 7px; cursor: pointer; }
+.practice-choices input { accent-color: var(--green); margin-top: 4px; flex-shrink: 0; }
+.practice-check { margin-top: 18px; }
+.practice-check:disabled { opacity: .5; cursor: default; }
+.practice-answer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 24px; color: var(--body); }
+.practice-answer h3 { color: var(--green); margin-bottom: 12px; }
+.practice-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.practice-actions button[aria-pressed=true] { background: #16292a; color: var(--green); border-color: var(--green); }
+.practice-goal { color: var(--body); margin: 14px 0 20px; }
+.practice-rating-panel { background: var(--panel-deep); border: 1px solid var(--line); border-radius: 9px; padding: 18px; margin-bottom: 24px; }
+.practice-notice { color: var(--green); font-size: .875rem; margin-bottom: 8px; }
+.practice-notes-label { margin-bottom: 10px; }
+.practice-question { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 28px; }
+.practice-question > h3 { color: var(--blue); font-size: 1.1rem; }
+.practice-answer h4, .practice-lab h4 { margin: 18px 0 12px; color: var(--green); }
+.practice-answer.incorrect > h4:first-child { color: var(--warn); }
+.practice-answer ol, .practice-lab ul { padding-left: 22px; }
+.practice-answer li, .practice-lab li { padding-left: 5px; margin-bottom: 12px; }
+.practice-lab { border-top: 1px solid var(--line); padding-top: 28px; margin-top: 28px; color: var(--body); }
+.practice-lab h3 { font-size: 1.2rem; margin-bottom: 14px; color: var(--text); }
+.practice-next { margin-top: 24px; }
+.practice-next:disabled { opacity: .5; cursor: default; }
+#exercise-title { scroll-margin-top: 90px; }
+.practice-empty .outline-button { display: block; margin-top: 16px; }
+@media (min-width: 851px) { .practice-list { position: sticky; top: 80px; max-height: calc(100dvh - 100px); overflow-y: auto; } }
+.practice-empty { padding: 28px; color: var(--muted); }
+@media (max-width: 850px) { .practice-grid { grid-template-columns: 1fr; } .practice-topic-buttons { display: none; } .practice-topic-select { display: block; } }
+@media (max-width: 560px) { .practice-topic-buttons { grid-template-columns: 1fr; } .practice-exercise { padding: 18px; } }

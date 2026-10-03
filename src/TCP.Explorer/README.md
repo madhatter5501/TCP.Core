@@ -62,11 +62,16 @@ Each section is its own page with a single intent. Every URL is linkable; the ho
 | `/layers/:layer/:view?` | Understand: encapsulation walkthrough; per-layer overview, header fields (`headers`), `gotchas` and source map (`code`) |
 | `/transmit?scenario=…` | Observe: run real TCP.Core code on two in-memory hosts; a frame ladder beside a field / hex / trace inspector |
 | `/sizes` | Experiment: MTU, MSS, options, VLAN tags and IPv4 fragmentation byte accounting |
+| `/practice?topic=…` | CCNA study: 12 guided lessons, 36 questions, worked reasoning, pitfalls, and external lab tasks with verification steps. Self-ratings, answers, and notes persist in browser local storage; the review filter follows those ratings. Evidence and IOS command samples are illustrative, not live device output. |
+| `/practice/scenarios?scenario=…` | Five original topology cases with 15 predict/diagnose/verify questions, actual Packet Tracer screenshots, saved baseline/fault/repaired labs, and rebuild instructions. |
+| `/practice/bank?q=…` | 200 CCNA v1.1 study questions, weighted by domain (40/40/50/20/30/20), with topic codes, topic references, explanations, configuration/output samples, illustrative WLAN panels, filters, shuffle, review flags, and saved first-check results. Results are not a validated exam-readiness score; parent tags do not establish complete skill coverage. |
 | `/concepts/:concept` | Learn: vocabulary articles (PDU names, datagrams) and an A–Z glossary (`/concepts/glossary#fcs`); add one in `pages/concepts/concepts.ts` |
 
 ## Source layout
 
 - `ClientApp/src/content/layers.ts` — layer teaching content and source-file map. Keep it in step with TCP.Core.
+- `ClientApp/src/content/questionBank/` — CCNA study questions, one file per exam section. Each authored question has an immutable ID. Assembly permutes choices by ID and choice content, independent of array order. A content fingerprint retires attempts after substantive revisions; saved selections use choice text identities, not display positions. Preserve IDs when reordering; use a new ID for a different question. Legacy v1 answers are retained in their old storage key but not reused against revised content; review flags carry over for continuing question IDs. Topic references and review/version dates live in `references.ts`.
+- [CCNA bank coverage matrix](../../docs/ccna-bank-coverage.md) — separately maintained parent/subtopic mapping, configuration samples, and hands-on limitations. Tests verify structure, answer-pattern/wording regressions, numeric calculations, and persistence behavior. They do not certify factual accuracy or authorship.
 - `ClientApp/src/content/glossary.ts` — term definitions plus how TCP.Core handles each. Spellings listed in `matches` are linked automatically wherever `GlossaryText` renders prose, with the definition on hover or focus; use `<Term id="…">` in hand-written JSX.
 - `ClientApp/src/model/packetModel.ts` — pure byte accounting behind the size lab.
 - `ClientApp/src/pages/*` — one folder per section, with colocated styles.
