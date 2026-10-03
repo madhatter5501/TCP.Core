@@ -1,0 +1,28 @@
+.troubleshooting-page { max-width: 1120px; width: 100%; margin: 0 auto; }
+.troubleshooting-index { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 24px 0; font-size: .875rem; }
+.troubleshooting-section { padding: 28px; margin: 22px 0; scroll-margin-top: 120px; }
+.troubleshooting-section h2 { margin-bottom: 18px; }
+.troubleshooting-section h3 { margin: 24px 0 12px; font-size: 1.1rem; }
+.troubleshooting-section p, .troubleshooting-section li { color: var(--body); }
+.troubleshooting-section p:last-child { margin-bottom: 0; }
+.troubleshooting-section .table-scroll { margin: 20px 0; }
+.troubleshooting-section .data-table { min-width: 600px; }
+.troubleshooting-section li { margin-bottom: 12px; }
+.troubleshooting-steps { padding-left: 24px; }
+.troubleshooting-steps li { padding-left: 6px; }
+.troubleshooting-path { margin: 24px 0; }
+.troubleshooting-path ol { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.troubleshooting-path li { position: relative; padding: 18px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); text-align: center; margin: 0; }
+.troubleshooting-path li:not(:last-child)::after { content: '→'; position: absolute; right: -18px; top: 28px; color: var(--green); }
+.troubleshooting-path strong { display: block; color: var(--text); font-size: .9rem; }
+.troubleshooting-path span { display: block; font-size: .75rem; margin-top: 6px; }
+.troubleshooting-path figcaption { color: var(--muted); font-size: .8125rem; margin-top: 16px; }
+.troubleshooting-sources { columns: 2; padding-left: 20px; }
+.troubleshooting-sources li { break-inside: avoid; font-size: .875rem; }
+@media (max-width: 650px) {
+  .troubleshooting-section { padding: 20px 16px; }
+  .troubleshooting-section h2 { font-size: 1.35rem; }
+  .troubleshooting-path ol { grid-template-columns: 1fr; }
+  .troubleshooting-path li:not(:last-child)::after { content: '↓'; right: calc(50% - 5px); top: auto; bottom: -22px; }
+  .troubleshooting-sources { columns: 1; }
+}

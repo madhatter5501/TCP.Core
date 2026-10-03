@@ -7,7 +7,8 @@ export const primaryNav = [
   { to: '/transmit', label: 'Transmit' },
   { to: '/sizes', label: 'MTU & MSS' },
   { to: '/concepts', label: 'Concepts' },
-  { to: '/practice', label: 'CCNA Practice' }
+  { to: '/practice', label: 'CCNA Practice' },
+  { to: '/troubleshooting', label: 'Troubleshooting Ideas' }
 ];
 
 export function AppLayout() {

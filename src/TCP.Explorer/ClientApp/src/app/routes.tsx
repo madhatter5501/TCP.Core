@@ -28,6 +28,7 @@ export const routes: RouteObject[] = [
           { path: 'layers/:layer/:view?', element: <LayersPage /> },
           { path: 'transmit', element: <TransmitPage /> },
           { path: 'sizes', element: <SizesPage /> },
+          { path: 'troubleshooting', lazy: async () => ({ Component: (await import('../pages/troubleshooting/TroubleshootingPage')).TroubleshootingPage }) },
           { path: 'practice', element: <PracticePage /> },
           { path: 'practice/scenarios', lazy: async () => ({ Component: (await import('../pages/scenarios/ScenariosPage')).ScenariosPage }) },
           { path: 'practice/bank', lazy: async () => ({ Component: (await import('../pages/questionBank/QuestionBankPage')).QuestionBankPage }) },

@@ -20,8 +20,8 @@ main { max-width: var(--page-width); margin: auto; padding: 22px var(--gutter) 2
   main:has(> .fill) { height: calc(100dvh - var(--topbar-height)); }
   .fill { flex: 1 1 0; min-height: 0; }
 }
-@media (max-width: 1100px) { .brand-label, .brand-divider, .transport-pill { display: none; } }
-@media (max-width: 700px) {
+@media (max-width: 1350px) { .brand-label, .brand-divider, .transport-pill { display: none; } }
+@media (max-width: 1000px) {
   .topbar { height: auto; }
   .topbar-inner { flex-wrap: wrap; row-gap: 10px; padding-top: 12px; padding-bottom: 10px; }
   .topbar nav { order: 3; width: 100%; overflow-x: auto; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); scrollbar-width: none; box-sizing: content-box; }
