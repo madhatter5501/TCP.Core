@@ -5,7 +5,7 @@ import { renderRoute } from '../test/renderRoute';
 test('home offers each section by intent', () => {
   renderRoute('/');
   expect(screen.getByRole('heading', { level: 1, name: 'What’s inside a packet?' })).toBeInTheDocument();
-  for (const title of ['Walk the layers', 'Transmit real packets', 'Size things up', 'Keep the names straight', 'Find your CCNA gaps']) {
+  for (const title of ['Walk the layers', 'Transmit real packets', 'Size things up', 'Keep the names straight']) {
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
   }
 });
@@ -103,3 +103,11 @@ test('unknown paths render the not-found page inside the layout', () => {
   expect(screen.getByRole('heading', { name: 'Nothing at this address.' })).toBeInTheDocument();
   expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
 });
+
+for (const path of ['/practice', '/practice/bank', '/practice/scenarios']) {
+  test(`${path} is absent from the public site`, () => {
+    renderRoute(path);
+    expect(screen.getByRole('heading', { name: 'Nothing at this address.' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'CCNA Practice' })).not.toBeInTheDocument();
+  });
+}

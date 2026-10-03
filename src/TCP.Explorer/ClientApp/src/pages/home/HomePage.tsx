@@ -24,16 +24,6 @@ const paths = [
     to: '/concepts', step: '04', kind: 'Learn', title: 'Keep the names straight',
     body: 'Frames, datagrams, segments, plus an A–Z glossary of every abbreviation: the vocabulary that trips everyone up, explained against this implementation.',
     cta: 'Read the concepts'
-  },
-  {
-    to: '/practice', step: '05', kind: 'Practice', title: 'Find your CCNA gaps',
-    body: 'Work through subnetting, switching, routing, security and automation samples. Check your reasoning and mark what needs more review.',
-    cta: 'Try the CCNA samples'
-  },
-  {
-    to: '/practice/bank', step: '06', kind: 'Test yourself', title: 'Practice all six CCNA sections',
-    body: 'Work through 200 questions with explanations, section filters, saved review flags, and first-check results that stay recorded when you retry.',
-    cta: 'Open the question bank'
   }
 ];
 
